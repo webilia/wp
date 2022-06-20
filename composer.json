@@ -2,6 +2,8 @@
     "name": "webilia/wp",
     "description": "A handy set of libraries for WordPress developments.",
     "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
             "Webilia\\WP\\": "src/"
@@ -11,6 +13,10 @@
         {
             "name": "Webilia",
             "email": "info@webilia.com"
+        },
+        {
+            "name": "Hossein Rafiei",
+            "email": "hoseinrafiei@gmail.com"
         }
     ],
     "require": {},
