@@ -1,0 +1,10 @@
+parameters:
+	level: max
+	paths:
+		- src
+	bootstrapFiles:
+	    - dev/phpstan/constants.php
+	scanFiles:
+	    - dev/phpstan/functions.php
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon

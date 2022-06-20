@@ -1,0 +1,33 @@
+{
+    "name": "webilia/wp",
+    "description": "A handy set of libraries for WordPress developments.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Webilia\\WP\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Webilia",
+            "email": "info@webilia.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpstan/phpstan": "^1.7",
+        "szepeviktor/phpstan-wordpress": "^1.1",
+        "squizlabs/php_codesniffer": "*"
+    },
+    "scripts": {
+        "phpstan": [
+            "vendor/bin/phpstan analyse -c phpstan.neon src"
+        ],
+        "phpcs": [
+            "vendor/bin/phpcs"
+        ],
+        "phpcbf": [
+            "vendor/bin/phpcbf"
+        ]
+    }
+}
