@@ -5,7 +5,7 @@ use WP_Error;
 
 /**
  * Class File
- * @package Bookup
+ * @package Utils
  */
 class File
 {

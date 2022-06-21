@@ -3,7 +3,7 @@ namespace Webilia\WP;
 
 /**
  * Class Folder
- * @package Bookup
+ * @package Utils
  */
 class Folder
 {

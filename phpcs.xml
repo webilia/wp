@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PHP_CodeSniffer">
+<ruleset name="PHP_CodeSniffer">
     <description>The coding standard for PHP_CodeSniffer itself.</description>
 
     <file>src</file>
@@ -14,7 +14,9 @@
     <rule ref="Generic.Commenting.Todo"/>
     <rule ref="Generic.ControlStructures.DisallowYodaConditions"/>
     <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
-    <rule ref="Generic.Files.LineEndings"/>
+    <rule ref="Generic.Files.LineEndings">
+        <exclude name="Generic.Files.LineEndings.InvalidEOLChar"/>
+    </rule>
     <rule ref="Generic.Files.LineLength">
         <properties>
             <property name="absoluteLineLimit" value="120"/>
