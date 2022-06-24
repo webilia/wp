@@ -23,7 +23,7 @@ class LifeCycle
     /**
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         add_filter('body_class', function(array $classes): array
         {
@@ -40,7 +40,7 @@ class LifeCycle
     /**
      * @return void
      */
-    public function set_body_started()
+    public function set_body_started(): void
     {
         self::$body_started = true;
     }

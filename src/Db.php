@@ -102,7 +102,7 @@ class Db
      * @param string $condition
      * @return mixed
      */
-	public function get($selects, string $table, string $field, $value, bool $return_object = true, string $condition = '')
+	public function get($selects, string $table, string $field, string $value, bool $return_object = true, string $condition = '')
 	{
 		$fields = '';
 		if(is_array($selects))
@@ -166,9 +166,9 @@ class Db
 	}
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function version()
+    public function version(): string
     {
         $query = "SELECT VERSION();";
         return $this->select($query, 'loadResult');

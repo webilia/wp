@@ -64,7 +64,7 @@ class Color
      * @param int $percent
      * @return string
      */
-    public static function darker($color, $percent)
+    public static function darker(string $color, int $percent): string
     {
         return self::brightness($color, -($percent / 100));
     }

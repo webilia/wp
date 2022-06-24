@@ -19,7 +19,7 @@ class RewriteRules
      */
     public static function todo(): void
     {
-        update_option(self::key(), 1);
+        update_option(self::key(), 1, true);
 	}
 
     /**

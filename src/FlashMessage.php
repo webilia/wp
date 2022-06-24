@@ -7,19 +7,60 @@ namespace Webilia\WP;
  */
 class FlashMessage
 {
+    const ERROR = 'error';
+    const INFO = 'info';
+    const SUCCESS = 'success';
+    const WARNING = 'warning';
+
     /**
      * Constructor method
      */
-	public function __construct()
+    public function __construct()
     {
-	}
+    }
 
     /**
      * @return void
      */
-    public function init()
+    public function init(): void
     {
         add_action('admin_notices', [self::class, 'show']);
+    }
+
+    /**
+     * @param string $message
+     * @return void
+     */
+    public static function error(string $message): void
+    {
+        self::add($message, self::ERROR);
+    }
+
+    /**
+     * @param string $message
+     * @return void
+     */
+    public static function info(string $message): void
+    {
+        self::add($message, self::INFO);
+    }
+
+    /**
+     * @param string $message
+     * @return void
+     */
+    public static function success(string $message): void
+    {
+        self::add($message, self::SUCCESS);
+    }
+
+    /**
+     * @param string $message
+     * @return void
+     */
+    public static function warning(string $message): void
+    {
+        self::add($message, self::WARNING);
     }
 
     /**
@@ -27,21 +68,22 @@ class FlashMessage
      * @param string $class
      * @return void
      */
-    public static function add(string $message, string $class = 'info'): void
+    private static function add(string $message, string $class = self::INFO): void
     {
-        $classes = ['error', 'info', 'success', 'warning'];
-        if(!in_array($class, $classes)) $class = 'info';
-
         // Option Key
         $key = self::key();
 
         $flash_messages = maybe_unserialize(get_option($key, []));
         if(!is_array($flash_messages)) return;
 
-        $flash_messages[$class][] = $message;
+        // Define Array
+        if(!isset($flash_messages[$class])) $flash_messages[$class] = [];
+
+        // Add if not exists
+        if(!in_array($message, $flash_messages[$class])) $flash_messages[$class][] = $message;
 
         update_option($key, $flash_messages);
-	}
+    }
 
     /**
      * @return void
@@ -64,7 +106,7 @@ class FlashMessage
 
         // Clear Flash Messages
         delete_option($key);
-	}
+    }
 
     /**
      * @return string

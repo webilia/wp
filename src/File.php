@@ -68,7 +68,7 @@ class File
         if(!$type)
         {
             return new WP_Error('failed', sprintf(
-                esc_html__('Failed to download %s file.', 'bookup'),
+                esc_html__('Failed to download %s file.'),
                 '<strong>'.$url.'</strong>'
             ));
         }

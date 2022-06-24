@@ -78,7 +78,7 @@ class Id
      * @param int $id
      * @return bool
      */
-    public function duplicated($id): bool
+    public function duplicated(int $id): bool
     {
         return in_array($id, self::$IDs);
     }
@@ -87,7 +87,7 @@ class Id
      * @param int $id
      * @return void
      */
-    public function add($id): void
+    public function add(int $id): void
     {
         self::$IDs[] = $id;
     }
