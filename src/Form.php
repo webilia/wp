@@ -264,12 +264,11 @@ class Form
         return '<textarea
             name="' . esc_attr($args['name']) . '"
             id="' . (isset($args['id']) ? esc_attr($args['id']) : '') . '"
+            class="' . (isset($args['class']) ? esc_attr($args['class']) : '') . '"
             placeholder="' . (isset($args['placeholder']) ? esc_attr($args['placeholder']) : '') . '"
             rows="' . (isset($args['rows']) ? esc_attr($args['rows']) : '') . '" ' .
             ($required ? 'required' : '') . '
-        >' .
-            (isset($args['value']) ? esc_textarea(stripslashes($args['value'])) : '') . '
-        </textarea>';
+        >' . (isset($args['value']) ? esc_textarea(stripslashes($args['value'])) : '') . '</textarea>';
     }
 
     /**
@@ -393,18 +392,14 @@ class Form
             $options .= '<option
                 value="' . absint($post->ID) . '" ' .
                 ((isset($args['value']) and $args['value'] == $post->ID) ? 'selected="selected"' : '') . '
-            >' .
-                esc_html($post->post_title) . '
-            </option>';
+            >' . esc_html($post->post_title) . '</option>';
         }
 
         return '<select
             name="' . esc_attr($args['name']) . '"
             id="' . (isset($args['id']) ? esc_attr($args['id']) : '') . '"
             class="' . (isset($args['class']) ? esc_attr($args['class']) : '') . '"
-        >' .
-            $options . '                       
-        </select>';
+        >' . $options . '</select>';
     }
 
     /**
@@ -438,11 +433,11 @@ class Form
     /**
      * @param string $action
      * @param string $name
-     * @return void
+     * @return string
      */
-    public static function nonce(string $action, string $name = '_wpnonce')
+    public static function nonce(string $action, string $name = '_wpnonce'): string
     {
-        wp_nonce_field($action, $name);
+        return wp_nonce_field($action, $name, true, false);
     }
 
     /**
