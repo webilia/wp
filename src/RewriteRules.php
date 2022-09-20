@@ -2,7 +2,7 @@
 namespace Webilia\WP;
 
 /**
- * Class User
+ * Rewrite Rules Class
  * @package WordPress
  */
 class RewriteRules
