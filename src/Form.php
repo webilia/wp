@@ -16,7 +16,7 @@ class Form
 	}
 
     /**
-     * @param array<string> $args
+     * @param array<mixed> $args
      * @return string
      */
     public static function label(array $args): string
@@ -328,7 +328,11 @@ class Form
         if(is_wp_error($terms)) return '';
 
         $options = [];
-        foreach($terms as $term) $options[$term->term_id] = $term->name;
+        foreach($terms as $term)
+        {
+            if(isset($args['name_as_value']) and $args['name_as_value']) $options[$term->name] = $term->name;
+            else $options[$term->term_id] = $term->name;
+        }
 
         // Options
         $args['options'] = $options;
