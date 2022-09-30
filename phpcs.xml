@@ -52,6 +52,11 @@
     <rule ref="Squiz.WhiteSpace.OperatorSpacing"/>
     <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>
     <rule ref="Zend.Files.ClosingTag"/>
+    <rule ref="Squiz.Commenting.FunctionComment">
+        <properties>
+            <property name="skipIfInheritdoc" value="true"/>
+        </properties>
+    </rule>
 
     <!-- Don't Hide Tokenizer Exceptions -->
     <rule ref="Internal.Tokenizer.Exception">
