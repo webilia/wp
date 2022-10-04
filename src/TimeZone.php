@@ -32,13 +32,23 @@ class TimeZone
         // Post ID
         if(is_numeric($this->timezone))
         {
-            // @todo use entity timezone
-            return $this->global();
+            return $this->entity((int) $this->timezone);
         }
-        else if(is_string($this->timezone)) return new DateTimeZone($this->timezone);
+        else if(is_string($this->timezone) and trim($this->timezone)) return new DateTimeZone($this->timezone);
         else if($this->timezone instanceof DateTimeZone) return $this->timezone;
 
         return $this->global();
+    }
+
+    /**
+     * Entity Timezone
+     *
+     * @param int $post_id
+     * @return DateTimeZone
+     */
+    public static function entity(int $post_id): DateTimeZone
+    {
+        return self::global();
     }
 
     /**
