@@ -1,6 +1,8 @@
 <?php
 namespace Webilia\WP;
 
+use Webilia\WP\Helpers\Arr;
+
 /**
  * Form Class
  *
@@ -425,12 +427,26 @@ class Form
      */
     public static function submit(array $args = []): string
     {
+        if(!count($args)) return '';
+
+        return self::button($args, 'submit');
+    }
+
+    /**
+     * @param array<string> $args
+     * @param string $type
+     * @return string
+     */
+    public static function button(array $args = [], $type = 'button'): string
+    {
+        if(!count($args)) return '';
+
         return '<button
-            type="submit"
+            type="'.esc_attr($type).'"
             id="' . (isset($args['id']) ? esc_attr($args['id']) : '') . '"
             class="' . (isset($args['class']) ? esc_attr($args['class']) : 'button button-primary') . '"
         >' .
-            esc_html($args['label']) . '
+                esc_html($args['label']) . '
         </button>';
     }
 
