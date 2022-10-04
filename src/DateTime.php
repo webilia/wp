@@ -14,12 +14,12 @@ class DateTime
     /**
      * @var string
      */
-    private string $datetime;
+    protected string $datetime;
 
     /**
      * @var DateTimeZone|null
      */
-    private ?DateTimeZone $tz;
+    protected ?DateTimeZone $tz;
 
     /**
      * Constructor
