@@ -5,7 +5,7 @@ namespace Webilia\WP\Interfaces;
  * Interface PluginProfile
  * @package Webilia\WP\Interfaces
  */
-interface PluginProfile extends Singleton
+interface PluginProfile
 {
     /**
      * @return string
