@@ -1,6 +1,7 @@
 <?php
 namespace Webilia\WP;
 
+use Webilia\WP\Entities\Post;
 use Webilia\WP\Interfaces\PostType as PostTypeInterface;
 use Webilia\WP\Traits\Nonce;
 use WP_Post;
@@ -158,4 +159,9 @@ abstract class PostType implements PostTypeInterface
     public function filters(string $post_type): void
     {
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    abstract public function entity(int $id): Post;
 }
