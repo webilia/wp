@@ -1,7 +1,7 @@
 <?php
 namespace Webilia\WP\Interfaces;
 
-use Webilia\WP\Entities\Post;
+use Webilia\WP\Interfaces\Entity\Post as PostInterface;
 
 /**
  * Interface Post Type
@@ -17,17 +17,17 @@ interface PostType extends Initiable
     public function args(): array;
 
     /**
-     * @param int $post_id
+     * @param PostInterface $entity
      * @param array<mixed> $data
      * @return void
      */
-    public function store(int $post_id, array $data): void;
+    public function store(PostInterface $entity, array $data): void;
 
     /**
      * Get Entity by ID
      *
      * @param int $post_id
-     * @return Post
+     * @return PostInterface
      */
-    public function entity(int $post_id): Post;
+    public function entity(int $post_id): PostInterface;
 }

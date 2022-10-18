@@ -1,7 +1,7 @@
 <?php
 namespace Webilia\WP;
 
-use Webilia\WP\Entities\Post;
+use Webilia\WP\Interfaces\Entity\Post as PostEntity;
 use Webilia\WP\Interfaces\PostType as PostTypeInterface;
 use Webilia\WP\Traits\Nonce;
 use WP_Post;
@@ -128,7 +128,7 @@ abstract class PostType implements PostTypeInterface
     /**
      * {@inheritDoc}
      */
-    abstract public function store(int $post_id, array $data): void;
+    abstract public function store(PostEntity $entity, array $data): void;
 
     /**
      * Post Type Deleted
@@ -163,5 +163,5 @@ abstract class PostType implements PostTypeInterface
     /**
      * {@inheritDoc}
      */
-    abstract public function entity(int $id): Post;
+    abstract public function entity(int $id): PostEntity;
 }
