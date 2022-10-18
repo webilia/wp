@@ -19,13 +19,13 @@ abstract class Entity implements EntityInterface
      * Entity ID
      * @var integer
      */
-    public int $id;
+    protected int $id;
 
     /**
      * Entity Type
      * @var string
      */
-    public string $type;
+    protected string $type;
 
     /**
      * Metadata Handler
