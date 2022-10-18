@@ -8,7 +8,7 @@ use Webilia\WP\Helpers\Arr;
  *
  * @package Utils
  */
-abstract class Singleton
+class Singleton
 {
     /**
      * Constructor

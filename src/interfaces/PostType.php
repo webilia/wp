@@ -2,10 +2,10 @@
 namespace Webilia\WP\Interfaces;
 
 /**
- * Interface Post
+ * Interface Post Type
  * @package Webilia\WP\Interfaces
  */
-interface Post extends Initiable
+interface PostType extends Initiable
 {
     /**
      * Post Type Definition

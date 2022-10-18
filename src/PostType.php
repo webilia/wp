@@ -1,7 +1,7 @@
 <?php
 namespace Webilia\WP;
 
-use Webilia\WP\Interfaces\Post as PostInterface;
+use Webilia\WP\Interfaces\PostType as PostTypeInterface;
 use Webilia\WP\Traits\Nonce;
 use WP_Post;
 
@@ -10,7 +10,7 @@ use WP_Post;
  *
  * @package Webilia\WP\PostTypes
  */
-abstract class Post implements PostInterface
+abstract class PostType implements PostTypeInterface
 {
     use Nonce;
 

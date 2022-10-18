@@ -3,7 +3,7 @@ namespace Webilia\WP;
 
 use Webilia\WP\Helpers\Arr;
 use Webilia\WP\Interfaces\Metabox as MetaboxInterface;
-use Webilia\WP\Interfaces\Post;
+use Webilia\WP\Interfaces\PostType;
 use WP_Post;
 
 /**
@@ -52,9 +52,9 @@ abstract class Metabox implements MetaboxInterface
 
     /**
      * Post Type Definition
-     * @var Post|null
+     * @var PostType|null
      */
-    public ?Post $post_type;
+    public ?PostType $post_type;
 
     /**
      * Constructor
