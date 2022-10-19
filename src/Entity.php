@@ -36,6 +36,7 @@ abstract class Entity implements EntityInterface
 
     /**
      * Constructor
+     *
      * @param int $id
      * @param string $type
      * @param Metadata $meta

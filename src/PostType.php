@@ -21,11 +21,6 @@ abstract class PostType implements PostTypeInterface
     public string $PT;
 
     /**
-     * @var array<mixed>
-     */
-    public array $args;
-
-    /**
      * Key to access request data
      * @var string|null
      */
@@ -39,7 +34,6 @@ abstract class PostType implements PostTypeInterface
     public function __construct(array $args)
     {
         $this->PT = $args['PT'];
-        $this->args = $args['args'];
         $this->nonce_name = $args['nonce_name'] ?? '_wpnonce';
         $this->nonce_action = $args['nonce_action'] ?? $this->PT;
         $this->request_key = $args['request_key'] ?? null;
@@ -80,7 +74,7 @@ abstract class PostType implements PostTypeInterface
      */
     public function register(): void
     {
-        register_post_type($this->PT, $this->args);
+        register_post_type($this->PT, $this->args());
     }
 
     /**
