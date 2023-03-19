@@ -25,7 +25,7 @@ class Db
 	public function q(string $query, string $type = '')
 	{
 		// Apply DB prefix
-		$query = $this->_prefix($query);
+		$query = $this->prefix($query);
 
 		// Converts query type to lowercase
 		$type = strtolower($type);
@@ -62,7 +62,7 @@ class Db
 		}
 
 		// Apply DB prefix
-		$query = $this->_prefix($query);
+		$query = $this->prefix($query);
 
 		// Get WordPress Db object
 		$database = $this->get_DBO();
@@ -78,7 +78,7 @@ class Db
 	public function select(string $query, string $result = 'loadObjectList')
 	{
 		// Apply DB prefix
-		$query = $this->_prefix($query);
+		$query = $this->prefix($query);
 
 		// Get WordPress DB object
 		$database = $this->get_DBO();
@@ -122,7 +122,7 @@ class Db
 		$query = "SELECT $fields FROM `#__$table` WHERE $condition";
 
 		// Apply DB prefix
-		$query = $this->_prefix($query);
+		$query = $this->prefix($query);
 
 		// Get WordPress DB object
 		$database = $this->get_DBO();
@@ -143,15 +143,13 @@ class Db
      * @param string $query
      * @return string
      */
-	public function _prefix(string $query)
-	{
+	public function prefix(string $query): string
+    {
         // Get WordPress DB object
 		$wpdb = $this->get_DBO();
 
         $query = str_replace('#__blogs', $wpdb->base_prefix.'blogs', $query);
-		$query = str_replace('#__', $wpdb->prefix, $query);
-
-        return $query;
+		return str_replace('#__', $wpdb->prefix, $query);
 	}
 
     /**

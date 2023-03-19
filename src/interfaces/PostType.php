@@ -26,8 +26,8 @@ interface PostType extends Initiable
     /**
      * Get Entity by ID
      *
-     * @param int $post_id
+     * @param int $id
      * @return PostInterface
      */
-    public function entity(int $post_id): PostInterface;
+    public function entity(int $id): PostInterface;
 }
