@@ -1,8 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-use Webilia\WP\Helpers\Arr;
-
 /**
  * Form Class
  *
@@ -274,7 +272,7 @@ class Form
     }
 
     /**
-     * @param array<string> $args
+     * @param array<mixed> $args
      * @return string
      */
     public static function editor(array $args): string
@@ -367,7 +365,7 @@ class Form
     }
 
     /**
-     * @param array<string> $args
+     * @param mixed[] $args
      * @return string
      */
     public static function posts(array $args): string

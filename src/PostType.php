@@ -47,6 +47,9 @@ abstract class PostType implements PostTypeInterface
         // Register Post Type
         add_action('init', [$this, 'register']);
 
+        // Endpoints
+        add_action('init', [$this, 'endpoints'], 60);
+
         // Columns
         add_filter('manage_'.$this->PT.'_posts_columns', [$this, 'columns']);
         add_action('manage_'.$this->PT.'_posts_custom_column', [$this, 'content'], 10, 2);
@@ -75,6 +78,15 @@ abstract class PostType implements PostTypeInterface
     public function register(): void
     {
         register_post_type($this->PT, $this->args());
+    }
+
+    /**
+     * Register endpoints
+     *
+     * @return void
+     */
+    public function endpoints(): void
+    {
     }
 
     /**
