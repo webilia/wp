@@ -66,7 +66,7 @@ interface Entity
     /**
      * Save multiple metadata
      *
-     * @param array<mixed> $values
+     * @param mixed[] $values
      * @return bool
      */
     public function meta_store(array $values): bool;

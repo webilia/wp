@@ -365,7 +365,7 @@ class Form
     }
 
     /**
-     * @param mixed[] $args
+     * @param array<string> $args
      * @return string
      */
     public static function posts(array $args): string
@@ -373,7 +373,7 @@ class Form
         if(!count($args)) return '';
 
         $post_type = $args['post_type'] ?? 'post';
-        $post_per_page = $args['post_per_page'] ?? '-1';
+        $post_per_page = $args['post_per_page'] ?? -1;
 
         $options = '';
         $query = ['post_type' => $post_type, 'posts_per_page' => $post_per_page];
