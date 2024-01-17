@@ -190,7 +190,7 @@ class Update
             $obj->url = $info->url ?? '';
             $obj->package = $info->download_link ?? '';
             $obj->tested = $info->tested ?? '';
-            $obj->icons = $info->icons ?? [];
+            $obj->icons = (array) ($info->icons ?? []);
 
             if(isset($transient->response)) $transient->response[$this->basename] = $obj;
         }
