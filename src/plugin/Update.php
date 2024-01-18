@@ -24,7 +24,7 @@ class Update
     private $basename;
 
     /**
-     * @var Licensing
+     * @var Licensing|null
      */
     private $licensing;
 
@@ -49,14 +49,14 @@ class Update
     /**
      * @param string $version
      * @param string $basename
-     * @param Licensing $licensing
+     * @param Licensing|null $licensing
      * @param string $coreVersion
      * @param string $server
      */
     public function __construct(
         string $version,
         string $basename,
-        Licensing $licensing,
+        Licensing $licensing = null,
         string $coreVersion = '',
         string $server = 'https://api.webilia.com/update'
     )
@@ -181,7 +181,7 @@ class Update
             && is_object($info)
             && isset($info->new_version)
             && version_compare($this->version, $info->new_version, '<')
-            && $this->licensing->isValid()
+            && (!$this->licensing || $this->licensing->isValid())
         )
         {
             $obj = new stdClass();
