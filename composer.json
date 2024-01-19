@@ -40,6 +40,6 @@
         ]
     },
     "archive": {
-        "exclude": ["/dev"]
+        "exclude": ["dev"]
     }
 }
