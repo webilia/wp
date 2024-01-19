@@ -38,8 +38,5 @@
         "phpcbf": [
             "vendor/bin/phpcbf"
         ]
-    },
-    "archive": {
-        "exclude": ["dev"]
     }
 }
