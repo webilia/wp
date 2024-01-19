@@ -89,7 +89,7 @@ class DateTime
      * @param string|DateTimeZone|int|null $timezone
      * @return Date
      */
-    public function convert($timezone = null)
+    public function convert($timezone = null): Date
     {
         return Date::parse($this->datetime, $this->tz)->timezone($timezone);
     }
