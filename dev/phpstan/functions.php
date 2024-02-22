@@ -59,3 +59,8 @@ function update_option()
 {
     $args = func_get_args();
 }
+
+function delete_option()
+{
+    $args = func_get_args();
+}

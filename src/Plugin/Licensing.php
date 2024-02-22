@@ -222,4 +222,40 @@ class Licensing
 
         return [$status, $message, $activation_id];
     }
+
+    /**
+     * @param string $license_key
+     * @return bool
+     */
+    public function deactivate(string $license_key): bool
+    {
+        $request = wp_remote_get($this->server, [
+            'timeout' => 10,
+            'body' => [
+                'action' => 'deactivate',
+                'basename' => $this->basename,
+                'code' => $license_key,
+                'url' => get_site_url()
+            ]
+        ]);
+
+        $status = 0;
+        if(!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
+        {
+            $JSON = wp_remote_retrieve_body($request);
+            $response = json_decode($JSON, true);
+
+            $status = $response['status'] ?? 0;
+            if($status)
+            {
+                // Delete License Key
+                delete_option($this->license_key_option);
+
+                // Delete Activation ID
+                delete_option($this->activation_id_option);
+            }
+        }
+
+        return $status;
+    }
 }
