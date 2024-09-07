@@ -4,7 +4,6 @@ namespace Webilia\WP;
 use Webilia\WP\Interfaces\Entity\Post as PostEntity;
 use Webilia\WP\Interfaces\PostType as PostTypeInterface;
 use Webilia\WP\Traits\Nonce;
-use WP_Post;
 
 /**
  * Class Post Type
@@ -115,10 +114,10 @@ abstract class PostType implements PostTypeInterface
      * Register Metaboxes
      *
      * @param string $post_type
-     * @param WP_Post $post
+     * @param mixed $post
      * @return void
      */
-    public function metaboxes(string $post_type, WP_Post $post): void
+    public function metaboxes(string $post_type, $post): void
     {
     }
 
@@ -126,10 +125,10 @@ abstract class PostType implements PostTypeInterface
      * Save the Post Type Content
      *
      * @param int $post_id
-     * @param WP_Post $post
+     * @param mixed $post
      * @return void
      */
-    abstract public function save(int $post_id, WP_Post $post): void;
+    abstract public function save(int $post_id, $post): void;
 
     /**
      * {@inheritDoc}
@@ -151,10 +150,10 @@ abstract class PostType implements PostTypeInterface
      *
      * @param string $new_status
      * @param string $old_status
-     * @param WP_Post $post
+     * @param mixed $post
      * @return void
      */
-    abstract public function status(string $new_status, string $old_status, WP_Post $post): void;
+    abstract public function status(string $new_status, string $old_status, $post): void;
 
     /**
      * Register Filter Options
