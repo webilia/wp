@@ -235,6 +235,7 @@ class Update
                 'basename' => $this->basename,
                 'current' => $this->version,
                 'core' => $this->coreVersion,
+                'code' => $this->licensing ? $this->licensing->getLicenseKey() : '',
                 'url' => get_site_url(),
             ]
         ]);
