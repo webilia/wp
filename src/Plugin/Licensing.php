@@ -1,12 +1,6 @@
 <?php
 namespace Webilia\WP\Plugin;
 
-/**
- * Plugin Licensing Class.
- *
- * @package Plugin
- * @version	1.0.0
- */
 class Licensing
 {
     const STATUS_VALID = 1;
@@ -148,11 +142,11 @@ class Licensing
     {
         // License Key
         $license_key = $this->getLicenseKey();
-        if(!trim($license_key)) return false;
+        if (!trim($license_key)) return false;
 
         // Activation ID
         $activation_id = $this->getActivationId();
-        if(!trim($activation_id)) return false;
+        if (!trim($activation_id)) return false;
 
         $request = wp_remote_get($this->server, [
             'body' => [
@@ -160,11 +154,11 @@ class Licensing
                 'basename' => $this->basename,
                 'code' => $license_key,
                 'url' => get_site_url(),
-                'activation_id' => $activation_id
-            ]
+                'activation_id' => $activation_id,
+            ],
         ]);
 
-        if(!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
+        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
         {
             $JSON = wp_remote_retrieve_body($request);
             $response = json_decode($JSON, true);
@@ -187,13 +181,13 @@ class Licensing
                 'action' => 'activate',
                 'basename' => $this->basename,
                 'code' => $license_key,
-                'url' => get_site_url()
-            ]
+                'url' => get_site_url(),
+            ],
         ]);
 
         $activation_id = null;
 
-        if(!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
+        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
         {
             $JSON = wp_remote_retrieve_body($request);
             $response = json_decode($JSON, true);
@@ -203,9 +197,9 @@ class Licensing
             $activation_id = $response['activation_id'] ?? null;
 
             // NO JSON Response
-            if(!is_array($response)) $message = self::ERROR_CONNECTION;
+            if (!is_array($response)) $message = self::ERROR_CONNECTION;
 
-            if($status)
+            if ($status)
             {
                 // Save License Key
                 update_option($this->license_key_option, $license_key);
@@ -235,18 +229,18 @@ class Licensing
                 'action' => 'deactivate',
                 'basename' => $this->basename,
                 'code' => $license_key,
-                'url' => get_site_url()
-            ]
+                'url' => get_site_url(),
+            ],
         ]);
 
         $status = 0;
-        if(!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
+        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
         {
             $JSON = wp_remote_retrieve_body($request);
             $response = json_decode($JSON, true);
 
             $status = $response['status'] ?? 0;
-            if($status)
+            if ($status)
             {
                 // Delete License Key
                 delete_option($this->license_key_option);

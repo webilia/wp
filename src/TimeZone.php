@@ -3,10 +3,6 @@ namespace Webilia\WP;
 
 use DateTimeZone;
 
-/**
- * Class Date
- * @package Webilia\WP\Date
- */
 class TimeZone
 {
     /**
@@ -30,12 +26,12 @@ class TimeZone
     public function get(): DateTimeZone
     {
         // Post ID
-        if(is_numeric($this->timezone))
+        if (is_numeric($this->timezone))
         {
             return $this->entity((int) $this->timezone);
         }
-        else if(is_string($this->timezone) and trim($this->timezone) and $this->timezone !== 'global') return new DateTimeZone($this->timezone);
-        else if($this->timezone instanceof DateTimeZone) return $this->timezone;
+        else if (is_string($this->timezone) and trim($this->timezone) and $this->timezone !== 'global') return new DateTimeZone($this->timezone);
+        else if ($this->timezone instanceof DateTimeZone) return $this->timezone;
 
         return $this->global();
     }
@@ -60,8 +56,8 @@ class TimeZone
         $timezone_string = get_option('timezone_string');
         $utc_offset = get_option('gmt_offset');
 
-        if(trim($timezone_string) == '' and trim($utc_offset)) $timezone_string = self::by_offset($utc_offset);
-        else if(trim($timezone_string) == '' and trim($utc_offset) == '0') $timezone_string = 'UTC';
+        if (trim($timezone_string) == '' and trim($utc_offset)) $timezone_string = self::by_offset($utc_offset);
+        else if (trim($timezone_string) == '' and trim($utc_offset) == '0') $timezone_string = 'UTC';
 
         return new DateTimeZone($timezone_string);
     }
@@ -77,7 +73,7 @@ class TimeZone
         $seconds = (int) ($offset * 3600);
 
         $timezone = timezone_name_from_abbr('', $seconds, 0);
-        if($timezone === false)
+        if ($timezone === false)
         {
             $timezones = [
                 '-12' => 'Pacific/Auckland',

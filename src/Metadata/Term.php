@@ -14,7 +14,7 @@ class Term extends Metadata implements \Webilia\WP\Interfaces\Metadata
     {
         parent::__construct([
             'id' => $id,
-            'entity' => Entity::TERM
+            'entity' => Entity::TERM,
         ]);
     }
 }

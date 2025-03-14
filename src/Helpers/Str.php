@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Helpers;
 
-/**
- * String Class
- * @package Utils
- */
 class Str
 {
     /**
@@ -117,7 +113,7 @@ class Str
     public static function ternary($string, string $falsy, string $truthy = null): string
     {
         // Use string as truthy value
-        if(is_null($truthy)) $truthy = $string;
+        if (is_null($truthy)) $truthy = $string;
 
         return Str::trim($string) ? $truthy : $falsy;
     }

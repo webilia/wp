@@ -3,10 +3,6 @@ namespace Webilia\WP;
 
 use WP_Error;
 
-/**
- * Class File
- * @package Utils
- */
 class File
 {
     /**
@@ -65,11 +61,11 @@ class File
         $request = wp_remote_get($url);
         $type = wp_remote_retrieve_header($request, 'content-type');
 
-        if(!$type)
+        if (!$type)
         {
             return new WP_Error('failed', sprintf(
                 esc_html__('Failed to download %s file.'),
-                '<strong>'.$url.'</strong>'
+                '<strong>' . $url . '</strong>'
             ));
         }
 
@@ -83,10 +79,10 @@ class File
     public static function upload(array $file)
     {
         // Include the function
-        if(!function_exists('wp_handle_upload')) require_once ABSPATH . 'wp-admin/includes/file.php';
+        if (!function_exists('wp_handle_upload')) require_once ABSPATH . 'wp-admin/includes/file.php';
 
         $uploaded = wp_handle_upload($file, ['test_form' => false]);
-        if($uploaded and !isset($uploaded['error']))
+        if ($uploaded and !isset($uploaded['error']))
         {
             $attachment = [
                 'post_mime_type' => $uploaded['type'],

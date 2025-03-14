@@ -4,10 +4,6 @@ namespace Webilia\WP;
 use Webilia\WP\Interfaces\PluginProfile;
 use Jenssegers\Blade\Blade;
 
-/**
- * Class View
- * @package Utils
- */
 class View
 {
     /**
@@ -22,7 +18,7 @@ class View
     public function __construct(PluginProfile $profile)
     {
         // Blade Engine
-        $this->blade = new Blade($profile->path().'/views', $profile->path().'/views/cache');
+        $this->blade = new Blade($profile->path() . '/views', $profile->path() . '/views/cache');
     }
 
     /**

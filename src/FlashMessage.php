@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * Flash Message Class
- * @package WordPress
- */
 class FlashMessage
 {
     const ERROR = 'error';
@@ -74,13 +70,13 @@ class FlashMessage
         $key = self::key();
 
         $flash_messages = maybe_unserialize(get_option($key, []));
-        if(!is_array($flash_messages)) return;
+        if (!is_array($flash_messages)) return;
 
         // Define Array
-        if(!isset($flash_messages[$class])) $flash_messages[$class] = [];
+        if (!isset($flash_messages[$class])) $flash_messages[$class] = [];
 
         // Add if not exists
-        if(!in_array($message, $flash_messages[$class])) $flash_messages[$class][] = $message;
+        if (!in_array($message, $flash_messages[$class])) $flash_messages[$class][] = $message;
 
         update_option($key, $flash_messages);
     }
@@ -94,13 +90,13 @@ class FlashMessage
         $key = self::key();
 
         $flash_messages = maybe_unserialize(get_option($key, []));
-        if(!is_array($flash_messages)) return;
+        if (!is_array($flash_messages)) return;
 
-        foreach($flash_messages as $class => $messages)
+        foreach ($flash_messages as $class => $messages)
         {
-            foreach($messages as $message)
+            foreach ($messages as $message)
             {
-                echo '<div class="notice notice-'.esc_attr($class).' is-dismissible"><p>'.$message.'</p></div>';
+                echo '<div class="notice notice-' . esc_attr($class) . ' is-dismissible"><p>' . $message . '</p></div>';
             }
         }
 

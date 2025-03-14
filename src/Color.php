@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * Class Color
- * @package Utils
- */
 class Color
 {
     /**
@@ -34,10 +30,10 @@ class Color
         $hex = ltrim($hex, '#');
 
         // 6 Character Color
-        if(strlen($hex) == 3) $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        if (strlen($hex) == 3) $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
 
         $hex = array_map('hexdec', str_split($hex, 2));
-        foreach($hex as &$color)
+        foreach ($hex as &$color)
         {
             $adjustableLimit = ($percent < 0) ? $color : (255 - $color);
             $adjustAmount = ceil($adjustableLimit * $percent);

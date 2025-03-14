@@ -5,11 +5,6 @@ use Webilia\WP\Entity;
 use Webilia\WP\Metadata\Term as TermMetadata;
 use Webilia\WP\Interfaces\Entity\Term as TermInterface;
 
-/**
- * Class Term Entity
- *
- * @package WordPress
- */
 class Term extends Entity implements TermInterface
 {
     /**

@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * ID Class
- * @package Utils
- */
 class Id
 {
     /**
@@ -30,7 +26,7 @@ class Id
     public static function getInstance()
     {
         // Get an instance of Class
-        if(is_null(self::$instance)) self::$instance = new self();
+        if (is_null(self::$instance)) self::$instance = new self();
 
         // Return the instance
         return self::$instance;
@@ -40,18 +36,24 @@ class Id
      * Cloning is forbidden.
      * @return void
      */
-    public function __clone() {}
+    public function __clone()
+    {
+    }
 
     /**
      * Unserializing instances of this class is forbidden.
      * @return void
      */
-    public function __wakeup() {}
+    public function __wakeup()
+    {
+    }
 
     /**
      * Constructor method
      */
-    protected function __construct() {}
+    protected function __construct()
+    {
+    }
 
     /**
      * @param int $id
@@ -60,7 +62,7 @@ class Id
     public static function get(int $id): int
     {
         $instance = self::getInstance();
-        if($instance->duplicated($id))
+        if ($instance->duplicated($id))
         {
             $id = $instance->unique();
 
@@ -98,7 +100,7 @@ class Id
     public function unique(): int
     {
         $id = mt_rand(10000, 99999);
-        if($this->duplicated($id)) $id = $this->unique();
+        if ($this->duplicated($id)) $id = $this->unique();
 
         return $id;
     }
@@ -112,7 +114,7 @@ class Id
         $keys = array_merge(range(0, 9), range('A', 'Z'), range('a', 'z'));
 
         $key = '';
-        for($i = 0; $i < $length; $i++) $key .= $keys[array_rand($keys)];
+        for ($i = 0; $i < $length; $i++) $key .= $keys[array_rand($keys)];
 
         return $key;
     }

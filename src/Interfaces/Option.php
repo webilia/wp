@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Interfaces;
 
-/**
- * Interface Option
- * @package Webilia\WP\Interfaces
- */
 interface Option
 {
     /**

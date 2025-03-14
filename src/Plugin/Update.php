@@ -3,12 +3,6 @@ namespace Webilia\WP\Plugin;
 
 use stdClass;
 
-/**
- * Plugin Update Class.
- *
- * @package Plugin
- * @version	1.0.0
- */
 class Update
 {
     /**
@@ -54,11 +48,11 @@ class Update
      * @param string $server
      */
     public function __construct(
-        string $version,
-        string $basename,
+        string    $version,
+        string    $basename,
         Licensing $licensing = null,
-        string $coreVersion = '',
-        string $server = 'https://api.webilia.com/update'
+        string    $coreVersion = '',
+        string    $server = 'https://api.webilia.com/update'
     )
     {
         $this->version = $version;
@@ -171,7 +165,7 @@ class Update
      */
     public function checkUpdate($transient)
     {
-        if(empty($transient->checked)) return $transient;
+        if (empty($transient->checked)) return $transient;
 
         // Get the remote Information
         $info = $this->getRemoteInformation();
@@ -192,7 +186,7 @@ class Update
             $obj->tested = $info->tested ?? '';
             $obj->icons = (array) ($info->icons ?? []);
 
-            if(isset($transient->response)) $transient->response[$this->basename] = $obj;
+            if (isset($transient->response)) $transient->response[$this->basename] = $obj;
         }
 
         return $transient;
@@ -208,11 +202,11 @@ class Update
      */
     public function checkInfo($false, $action, $arg)
     {
-        if(isset($arg->slug) and $arg->slug === $this->slug)
+        if (isset($arg->slug) and $arg->slug === $this->slug)
         {
             $info = $this->getRemoteInformation();
 
-            if(!is_object($info)) return false;
+            if (!is_object($info)) return false;
 
             $info->icons = (array) $info->icons;
             $info->sections = (array) $info->sections;
@@ -237,10 +231,10 @@ class Update
                 'core' => $this->coreVersion,
                 'code' => $this->licensing ? $this->licensing->getLicenseKey() : '',
                 'url' => get_site_url(),
-            ]
+            ],
         ]);
 
-        if(!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
+        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
         {
             return json_decode(wp_remote_retrieve_body($request));
         }

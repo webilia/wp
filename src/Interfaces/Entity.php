@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Interfaces;
 
-/**
- * Interface Entity
- * @package Webilia\WP\Interfaces
- */
 interface Entity
 {
     /**

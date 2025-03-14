@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Formats;
 
-/**
- * Class Time Format
- * @package Webilia\WP\Formats
- */
 class Time
 {
     /**

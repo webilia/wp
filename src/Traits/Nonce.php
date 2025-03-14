@@ -24,10 +24,10 @@ trait Nonce
     public function nonce_check(): bool
     {
         // Nonce is not set!
-        if(Arr::notset($_REQUEST, $this->nonce_name)) return false;
+        if (Arr::notset($_REQUEST, $this->nonce_name)) return false;
 
         // Nonce is not valid!
-        if(!wp_verify_nonce(
+        if (!wp_verify_nonce(
             sanitize_text_field($_REQUEST[$this->nonce_name]),
             $this->nonce_action
         )) return false;

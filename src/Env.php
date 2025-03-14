@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * Class Env
- * @package WordPress
- */
 class Env
 {
     /**

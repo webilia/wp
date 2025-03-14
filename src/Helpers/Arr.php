@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Helpers;
 
-/**
- * Array Class
- * @package Utils
- */
 class Arr
 {
     /**
@@ -32,7 +28,7 @@ class Arr
      */
     public static function filled($var, string $key = null): bool
     {
-        if($key) return is_array($var) and isset($var[$key]) and is_array($var[$key]) and count($var[$key]);
+        if ($key) return is_array($var) and isset($var[$key]) and is_array($var[$key]) and count($var[$key]);
         else return is_array($var) and count($var);
     }
 
@@ -125,10 +121,10 @@ class Arr
     public static function append(array $a, array $b): array
     {
         $result = $a;
-        foreach($b as $k => $v)
+        foreach ($b as $k => $v)
         {
-            if(is_array($v) && isset($result[$k])) $result[$k] = self::append($result[$k], $v);
-            else if(!isset($result[$k])) $result[$k] = $v;
+            if (is_array($v) && isset($result[$k])) $result[$k] = self::append($result[$k], $v);
+            else if (!isset($result[$k])) $result[$k] = $v;
         }
 
         return $result;

@@ -3,10 +3,6 @@ namespace Webilia\WP\Interfaces;
 
 use Webilia\WP\Interfaces\Entity\Post as PostInterface;
 
-/**
- * Interface Post Type
- * @package Webilia\WP\Interfaces
- */
 interface PostType extends Initiable
 {
     /**

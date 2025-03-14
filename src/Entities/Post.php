@@ -5,11 +5,6 @@ use Webilia\WP\Entity;
 use Webilia\WP\Metadata\Post as PostMetadata;
 use Webilia\WP\Interfaces\Entity\Post as PostInterface;
 
-/**
- * Class Post Entity
- *
- * @package WordPress
- */
 class Post extends Entity implements PostInterface
 {
     /**

@@ -1,2 +1,5 @@
 /vendor/
 .idea
+
+# OS
+**/.DS_Store

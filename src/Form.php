@@ -1,19 +1,14 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * Form Class
- *
- * @package Utils
- */
 class Form
 {
     /**
      * Constructor method
      */
-	public function __construct()
+    public function __construct()
     {
-	}
+    }
 
     /**
      * @param array<mixed> $args
@@ -21,7 +16,7 @@ class Form
      */
     public static function label(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $required = (isset($args['required']) and $args['required']);
 
@@ -38,7 +33,7 @@ class Form
      */
     public static function text(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'text');
     }
 
@@ -48,7 +43,7 @@ class Form
      */
     public static function number(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'number');
     }
 
@@ -58,7 +53,7 @@ class Form
      */
     public static function url(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'url');
     }
 
@@ -68,7 +63,7 @@ class Form
      */
     public static function tel(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'tel');
     }
 
@@ -78,7 +73,7 @@ class Form
      */
     public static function email(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'email');
     }
 
@@ -88,7 +83,7 @@ class Form
      */
     public static function datepicker(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'date');
     }
 
@@ -98,7 +93,7 @@ class Form
      */
     public static function checkbox(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'checkbox');
     }
 
@@ -108,7 +103,7 @@ class Form
      */
     public static function file(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'file');
     }
 
@@ -118,7 +113,7 @@ class Form
      */
     public static function hidden(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
         return self::input($args, 'hidden');
     }
 
@@ -140,7 +135,7 @@ class Form
      */
     public static function input(array $args, string $type = 'text'): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $attributes = self::concat_attributes($args);
 
@@ -172,12 +167,12 @@ class Form
      */
     public static function select(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $options = '';
 
         // Show Empty Option
-        if(isset($args['show_empty']) and $args['show_empty'])
+        if (isset($args['show_empty']) and $args['show_empty'])
         {
             $empty_label = (isset($args['empty_label']) ? esc_html($args['empty_label']) : '-----');
             $options .= '<option
@@ -187,18 +182,18 @@ class Form
             </option>';
         }
 
-        foreach($args['options'] as $value => $label)
+        foreach ($args['options'] as $value => $label)
         {
             $options .= '<option
                 value="' . esc_attr($value) . '" ' .
                 (
-                    (
-                        isset($args['value'])
-                        and (
-                            (!is_array($args['value']) and trim($args['value']) !== '' and $args['value'] === $value)
-                            or (is_array($args['value']) and in_array($value, $args['value']))
-                        )
-                    ) ? 'selected' : ''
+                (
+                    isset($args['value'])
+                    and (
+                        (!is_array($args['value']) and trim($args['value']) !== '' and $args['value'] === $value)
+                        or (is_array($args['value']) and in_array($value, $args['value']))
+                    )
+                ) ? 'selected' : ''
                 ) . '>' .
                 esc_html($label) . '
             </option>';
@@ -225,7 +220,7 @@ class Form
      */
     public static function checkboxes(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $attributes = self::concat_attributes($args);
 
@@ -233,7 +228,7 @@ class Form
         $required = (isset($args['required']) and $args['required']) ? true : false;
 
         $checkboxes = '';
-        foreach($args['options'] as $value => $label)
+        foreach ($args['options'] as $value => $label)
         {
             $checkboxes .= '<li>
                 <label>
@@ -241,10 +236,10 @@ class Form
                         name="' . (isset($args['name']) ? esc_attr($args['name']) : '') . '"
                         type="checkbox"
                         value="' . esc_attr($value) . '" ' .
-                        ((isset($args['value']) and is_array($args['value']) and in_array($value, $args['value'])) ? 'checked' : '') . ' ' .
-                        trim($attributes) . ' ' . ($required ? 'required' : '') . '
+                ((isset($args['value']) and is_array($args['value']) and in_array($value, $args['value'])) ? 'checked' : '') . ' ' .
+                trim($attributes) . ' ' . ($required ? 'required' : '') . '
                     >' .
-                    esc_html($label) . '
+                esc_html($label) . '
                 </label>
             </li>';
         }
@@ -258,7 +253,7 @@ class Form
      */
     public static function textarea(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $required = (isset($args['required']) and $args['required']) ? true : false;
         return '<textarea
@@ -277,7 +272,7 @@ class Form
      */
     public static function editor(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $value = isset($args['value']) ? stripslashes($args['value']) : '';
         $id = isset($args['id']) ? esc_attr($args['id']) : '';
@@ -298,7 +293,7 @@ class Form
      */
     public static function colorpicker(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         return '<input
             type="text"
@@ -325,12 +320,12 @@ class Form
             'hide_empty' => (isset($args['hide_empty']) ? $args['hide_empty'] : false),
         ]);
 
-        if(is_wp_error($terms)) return '';
+        if (is_wp_error($terms)) return '';
 
         $options = [];
-        foreach($terms as $term)
+        foreach ($terms as $term)
         {
-            if(isset($args['name_as_value']) and $args['name_as_value']) $options[$term->name] = $term->name;
+            if (isset($args['name_as_value']) and $args['name_as_value']) $options[$term->name] = $term->name;
             else $options[$term->term_id] = $term->name;
         }
 
@@ -347,16 +342,16 @@ class Form
      */
     public static function pages(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         // Get WordPress Pages
         $pages = get_pages();
 
         // Not array of pages
-        if(!is_array($pages)) return '';
+        if (!is_array($pages)) return '';
 
         $options = [];
-        foreach($pages as $page) $options[$page->ID] = $page->post_title;
+        foreach ($pages as $page) $options[$page->ID] = $page->post_title;
 
         $args['options'] = $options;
 
@@ -370,7 +365,7 @@ class Form
      */
     public static function posts(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $post_type = $args['post_type'] ?? 'post';
         $post_per_page = $args['post_per_page'] ?? -1;
@@ -380,18 +375,18 @@ class Form
         $posts = get_posts($query);
 
         // Not array of posts
-        if(!is_array($posts)) return '';
+        if (!is_array($posts)) return '';
 
         // Show Empty Option
-        if(isset($args['show_empty']) and $args['show_empty'])
+        if (isset($args['show_empty']) and $args['show_empty'])
         {
             $options .= '<option
                 value="" '
                 . ((isset($args['value']) and esc_attr($args['value']) == '') ? 'selected="selected"' : '')
-            . '>' . ((isset($args['empty_label']) and trim($args['empty_label'])) ? $args['empty_label'] : '-----') . '</option>';
+                . '>' . ((isset($args['empty_label']) and trim($args['empty_label'])) ? $args['empty_label'] : '-----') . '</option>';
         }
 
-        foreach($posts as $post)
+        foreach ($posts as $post)
         {
             $options .= '<option
                 value="' . absint($post->ID) . '" ' .
@@ -412,7 +407,7 @@ class Form
      */
     public static function users(array $args): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         $args['echo'] = 0;
 
@@ -425,7 +420,7 @@ class Form
      */
     public static function submit(array $args = []): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         return self::button($args, 'submit');
     }
@@ -437,14 +432,14 @@ class Form
      */
     public static function button(array $args = [], $type = 'button'): string
     {
-        if(!count($args)) return '';
+        if (!count($args)) return '';
 
         return '<button
-            type="'.esc_attr($type).'"
+            type="' . esc_attr($type) . '"
             id="' . (isset($args['id']) ? esc_attr($args['id']) : '') . '"
             class="' . (isset($args['class']) ? esc_attr($args['class']) : 'button button-primary') . '"
         >' .
-                esc_html($args['label']) . '
+            esc_html($args['label']) . '
         </button>';
     }
 
@@ -473,9 +468,9 @@ class Form
     public static function concat_attributes(array $args): string
     {
         $attributes = '';
-        if(isset($args['attributes']) and is_array($args['attributes']) and count($args['attributes']))
+        if (isset($args['attributes']) and is_array($args['attributes']) and count($args['attributes']))
         {
-            foreach($args['attributes'] as $key => $value)
+            foreach ($args['attributes'] as $key => $value)
             {
                 $attributes .= $key . '="' . esc_attr($value) . '" ';
             }

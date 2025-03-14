@@ -14,7 +14,7 @@ class User extends Metadata implements \Webilia\WP\Interfaces\Metadata
     {
         parent::__construct([
             'id' => $id,
-            'entity' => Entity::USER
+            'entity' => Entity::USER,
         ]);
     }
 }

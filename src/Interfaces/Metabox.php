@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Interfaces;
 
-/**
- * Interface Metabox
- * @package Webilia\WP\Interfaces
- */
 interface Metabox extends Initiable
 {
     /**

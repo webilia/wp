@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * Class Folder
- * @package Utils
- */
 class Folder
 {
     /**
@@ -15,15 +11,15 @@ class Folder
     public static function files(string $path, string $filter = '.'): array
     {
         // Path doesn't exists
-        if(!self::exists($path)) return [];
+        if (!self::exists($path)) return [];
 
         $files = [];
-        if($handle = opendir($path))
+        if ($handle = opendir($path))
         {
-            while(($entry = readdir($handle)) !== false)
+            while (($entry = readdir($handle)) !== false)
             {
-                if($entry == '.' or $entry == '..' or is_dir($entry)) continue;
-                if(!preg_match("/$filter/", $entry)) continue;
+                if ($entry == '.' or $entry == '..' or is_dir($entry)) continue;
+                if (!preg_match("/$filter/", $entry)) continue;
 
                 $files[] = $entry;
             }
@@ -50,7 +46,7 @@ class Folder
     public static function create(string $path): bool
     {
         // Directory Exists Already
-        if(Folder::exists($path)) return true;
+        if (Folder::exists($path)) return true;
 
         // Check Parent Directory
         $parent = substr($path, 0, (strrpos($path, '/', -2) + 1));

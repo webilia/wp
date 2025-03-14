@@ -5,11 +5,6 @@ use Webilia\WP\Entity;
 use Webilia\WP\Metadata\User as UserMetadata;
 use Webilia\WP\Interfaces\Entity\User as UserInterface;
 
-/**
- * Class User Entity
- *
- * @package WordPress
- */
 class User extends Entity implements UserInterface
 {
     /**

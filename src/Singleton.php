@@ -3,11 +3,6 @@ namespace Webilia\WP;
 
 use Webilia\WP\Helpers\Arr;
 
-/**
- * Singleton Class
- *
- * @package Utils
- */
 class Singleton
 {
     /**
@@ -25,7 +20,7 @@ class Singleton
         static $instances = [];
 
         $class = get_called_class();
-        if(!Arr::isset($instances, $class))
+        if (!Arr::isset($instances, $class))
         {
             $instances[$class] = new $class();
         }

@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Formats;
 
-/**
- * Class DateTime Format
- * @package Webilia\WP\Formats
- */
 class DateTime
 {
     /**
@@ -12,7 +8,7 @@ class DateTime
      */
     public static function wp(): string
     {
-        return Date::wp().' '.Time::wp();
+        return Date::wp() . ' ' . Time::wp();
     }
 
     /**
@@ -20,7 +16,7 @@ class DateTime
      */
     public static function tech(): string
     {
-        return Date::tech().' '.Time::tech();
+        return Date::tech() . ' ' . Time::tech();
     }
 
     /**
@@ -28,6 +24,6 @@ class DateTime
      */
     public static function js(): string
     {
-        return Date::js().' '.Time::js();
+        return Date::js() . ' ' . Time::js();
     }
 }

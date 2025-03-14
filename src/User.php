@@ -3,18 +3,14 @@ namespace Webilia\WP;
 
 use WP_Error;
 
-/**
- * Class User
- * @package WordPress
- */
 class User
 {
     /**
      * Constructor method
      */
-	public function __construct()
+    public function __construct()
     {
-	}
+    }
 
     /**
      * @param string $user_login
@@ -25,7 +21,7 @@ class User
     public static function register(string $user_login, string $user_email, string $password = null)
     {
         // Password
-        if(!$password) $password = wp_generate_password(12);
+        if (!$password) $password = wp_generate_password(12);
 
         // Errors
         $errors = new WP_Error();
@@ -42,11 +38,11 @@ class User
         $user_email = apply_filters('user_registration_email', $user_email);
 
         // Check the username.
-        if($sanitized_user_login === '')
+        if ($sanitized_user_login === '')
         {
             $errors->add('empty_username', esc_html__("<strong>Error</strong>: Please enter a username."));
         }
-        else if(!validate_username($user_login))
+        else if (!validate_username($user_login))
         {
             $errors->add(
                 'invalid_username',
@@ -54,7 +50,7 @@ class User
             );
             $sanitized_user_login = '';
         }
-        else if(username_exists($sanitized_user_login))
+        else if (username_exists($sanitized_user_login))
         {
             $errors->add('username_exists', esc_html__('<strong>Error</strong>: This username is already registered.'));
         }
@@ -63,23 +59,23 @@ class User
             // This filter is documented in wp-includes/user.php
 
             $illegal_user_logins = (array) apply_filters('illegal_user_logins', []);
-            if(in_array(strtolower($sanitized_user_login), array_map('strtolower', $illegal_user_logins), true))
+            if (in_array(strtolower($sanitized_user_login), array_map('strtolower', $illegal_user_logins), true))
             {
                 $errors->add('invalid_username', esc_html__("<strong>Error</strong>: Sorry, Username is not allowed."));
             }
         }
 
         // Check the email address.
-        if($user_email === '')
+        if ($user_email === '')
         {
             $errors->add('empty_email', esc_html__("<strong>Error</strong>: Please type your email address."));
         }
-        else if(!is_email($user_email))
+        else if (!is_email($user_email))
         {
             $errors->add('invalid_email', esc_html__("<strong>Error</strong>: The email address isn't correct."));
             $user_email = '';
         }
-        else if(email_exists($user_email))
+        else if (email_exists($user_email))
         {
             $errors->add('email_exists', esc_html__('<strong>Error</strong>: This email is already registered.'));
         }
@@ -118,10 +114,10 @@ class User
         $errors = apply_filters('registration_errors', $errors, $sanitized_user_login, $user_email);
 
         // Return Errors
-        if($errors->has_errors()) return $errors;
+        if ($errors->has_errors()) return $errors;
 
         $user_id = wp_create_user($sanitized_user_login, $password, $user_email);
-        if(!$user_id || is_wp_error($user_id))
+        if (!$user_id || is_wp_error($user_id))
         {
             $errors->add('registerfail',
                 sprintf(

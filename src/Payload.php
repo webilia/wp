@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * Payload Class
- * @package Utils
- */
 class Payload
 {
     /**
@@ -15,9 +11,9 @@ class Payload
     /**
      * Constructor method
      */
-	public function __construct()
+    public function __construct()
     {
-	}
+    }
 
     /**
      * @param string $key
@@ -44,7 +40,7 @@ class Payload
      */
     public static function remove(string $key): bool
     {
-        if(isset(self::$vars[$key]))
+        if (isset(self::$vars[$key]))
         {
             unset(self::$vars[$key]);
             return true;

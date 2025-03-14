@@ -3,11 +3,6 @@ namespace Webilia\WP;
 
 use Webilia\WP\Helpers\Arr;
 
-/**
- * Option Class
- *
- * @package WordPress
- */
 abstract class Option
 {
     /**
@@ -60,7 +55,7 @@ abstract class Option
     {
         // Get Styles
         $current = $this->get();
-        if(Arr::not($current)) $current = [];
+        if (Arr::not($current)) $current = [];
 
         // Merge
         $final = array_merge($current, $value);

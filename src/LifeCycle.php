@@ -1,11 +1,6 @@
 <?php
 namespace Webilia\WP;
 
-/**
- * LifeCycle Class
- *
- * @package WordPress
- */
 class LifeCycle
 {
     /**
@@ -16,22 +11,22 @@ class LifeCycle
     /**
      * Constructor method
      */
-	public function __construct()
+    public function __construct()
     {
-	}
+    }
 
     /**
      * @return void
      */
     public function init(): void
     {
-        add_filter('body_class', function(array $classes): array
+        add_filter('body_class', function (array $classes): array
         {
             self::set_body_started();
             return $classes;
         });
 
-        add_action('wp_body_open', function(): void
+        add_action('wp_body_open', function (): void
         {
             self::set_body_started();
         });

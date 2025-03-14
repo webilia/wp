@@ -5,10 +5,6 @@ use Webilia\WP\Helpers\Arr;
 use Webilia\WP\Interfaces\Metabox as MetaboxInterface;
 use Webilia\WP\Interfaces\PostType;
 
-/**
- * Class Metabox
- * @package Bookup
- */
 abstract class Metabox implements MetaboxInterface
 {
     const CONTEXT_ADVANCED = 'advanced';

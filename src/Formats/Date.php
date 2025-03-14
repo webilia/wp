@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Formats;
 
-/**
- * Class Date Format
- * @package Webilia\WP\Formats
- */
 class Date
 {
     /**

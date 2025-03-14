@@ -3,10 +3,6 @@ namespace Webilia\WP;
 
 use DateTimeZone;
 
-/**
- * Class DateTime
- * @package Webilia\WP\Date
- */
 class DateTime
 {
     const FORMAT_STANDARD = 'Y-m-d H:i';

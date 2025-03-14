@@ -4,11 +4,6 @@ namespace Webilia\WP;
 use Webilia\WP\Interfaces\Entity as EntityInterface;
 use Webilia\WP\Interfaces\Metadata;
 
-/**
- * Class Entity
- *
- * @package WordPress
- */
 abstract class Entity implements EntityInterface
 {
     const TERM = 'term';

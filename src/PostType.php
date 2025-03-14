@@ -5,11 +5,6 @@ use Webilia\WP\Interfaces\Entity\Post as PostEntity;
 use Webilia\WP\Interfaces\PostType as PostTypeInterface;
 use Webilia\WP\Traits\Nonce;
 
-/**
- * Class Post Type
- *
- * @package Webilia\WP\PostTypes
- */
 abstract class PostType implements PostTypeInterface
 {
     use Nonce;
@@ -50,8 +45,8 @@ abstract class PostType implements PostTypeInterface
         add_action('init', [$this, 'endpoints'], 60);
 
         // Columns
-        add_filter('manage_'.$this->PT.'_posts_columns', [$this, 'columns']);
-        add_action('manage_'.$this->PT.'_posts_custom_column', [$this, 'content'], 10, 2);
+        add_filter('manage_' . $this->PT . '_posts_columns', [$this, 'columns']);
+        add_action('manage_' . $this->PT . '_posts_custom_column', [$this, 'content'], 10, 2);
 
         // Search
         add_action('restrict_manage_posts', [$this, 'filters']);

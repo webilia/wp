@@ -1,10 +1,6 @@
 <?php
 namespace Webilia\WP\Interfaces;
 
-/**
- * Interface Initiable
- * @package Webilia\WP\Interfaces
- */
 interface Initiable
 {
     /**
