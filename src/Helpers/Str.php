@@ -13,7 +13,7 @@ class Str
     }
 
     /**
-     * Convert a string to human readable format
+     * Convert a string to human-readable format
      *
      * @param string $string
      * @return string

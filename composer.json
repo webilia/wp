@@ -4,6 +4,7 @@
     "type": "library",
     "license": "MIT",
     "minimum-stability": "stable",
+    "version": "1.0.10",
     "autoload": {
         "psr-4": {
             "Webilia\\WP\\": "src/"
