@@ -6,23 +6,23 @@ class Ads
     /**
      * Solution ID.
      *
-     * @var int
+     * @var integer
      */
-    private int $solution_id;
+    private $solution_id;
 
     /**
      * Ads server URL.
      *
      * @var string
      */
-    private string $server;
+    private $server;
 
     /**
      * Site URL.
      *
      * @var string
      */
-    private string $url;
+    private $url;
 
     /**
      * Constructor.
@@ -104,8 +104,8 @@ class Ads
     /**
      * Fetch ads from remote server.
      *
-     * @param array<mixed> $params
-     * @return array<mixed>
+     * @param mixed[] $params
+     * @return mixed[]
      */
     public function getAds(array $params = []): array
     {
