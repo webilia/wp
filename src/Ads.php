@@ -27,9 +27,9 @@ class Ads
     /**
      * Constructor.
      *
-     * @param int         $solution_id
+     * @param int $solution_id
      * @param string|null $url
-     * @param string      $server
+     * @param string $server
      */
     public function __construct(int $solution_id, ?string $url = null, string $server = 'https://api.webilia.com/ads')
     {
@@ -112,18 +112,19 @@ class Ads
         $request = wp_remote_get($this->server, [
             'body' => array_merge([
                 'solution_id' => $this->solution_id,
-                'url'         => $this->url,
+                'url' => $this->url,
             ], $params),
         ]);
 
-        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200) {
+        $ads = [];
+        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
+        {
             $body = wp_remote_retrieve_body($request);
-            $ads = json_decode($body, true);
-            if (is_array($ads)) {
-                return $ads;
-            }
+            $response = json_decode($body, true);
+
+            if (is_array($response)) $ads = $response;
         }
 
-        return [];
+        return $ads;
     }
 }
