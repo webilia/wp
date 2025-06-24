@@ -12,12 +12,12 @@ class Feedback
 
     public function __construct(array $args)
     {
-        $this->textdomain = $args['textdomain'] ?? '';
-        $this->alert_class = $args['alert'] ?? '';
-        $this->success_class = $args['success'] ?? '';
-        $this->error_class = $args['error'] ?? '';
         $this->plugin = $args['plugin'] ?? '';
         $this->basename = $args['basename'] ?? '';
+        $this->textdomain = $args['textdomain'] ?? $this->plugin;
+        $this->alert_class = isset($args['alert']) && trim($args['alert']) ? $args['alert'] : 'lsd-alert';
+        $this->success_class = isset($args['success']) && trim($args['success']) ? $args['success'] : 'lsd-success';
+        $this->error_class = isset($args['error']) && trim($args['error']) ? $args['error'] : 'lsd-error';
 
         $this->init();
     }
