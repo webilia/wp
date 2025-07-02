@@ -23,11 +23,6 @@ abstract class Metabox implements MetaboxInterface
     /**
      * @var string
      */
-    public string $title;
-
-    /**
-     * @var string
-     */
     public string $context;
 
     /**
@@ -59,7 +54,6 @@ abstract class Metabox implements MetaboxInterface
     public function __construct(array $args)
     {
         $this->id = $args['id'];
-        $this->title = $args['title'];
         $this->context = $args['context'] ?? self::CONTEXT_NORMAL;
         $this->priority = $args['priority'] ?? self::PRIORITY_HIGH;
         $this->PT = $args['PT'];
@@ -76,7 +70,7 @@ abstract class Metabox implements MetaboxInterface
      */
     public function register(string $post_type, $post): void
     {
-        add_meta_box($this->id, $this->title, $this->callback, $this->PT, $this->context, $this->priority);
+        add_meta_box($this->id, $this->title(), $this->callback, $this->PT, $this->context, $this->priority);
     }
 
     /**
