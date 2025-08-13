@@ -170,6 +170,42 @@ class Licensing
     }
 
     /**
+     * Validate license and return response details
+     *
+     * @return array
+     */
+    public function validate(): array
+    {
+        // License Key
+        $license_key = $this->getLicenseKey();
+        if (!trim($license_key)) return [];
+
+        // Activation ID
+        $activation_id = $this->getActivationId();
+        if (!trim($activation_id)) return [];
+
+        $request = wp_remote_get($this->server, [
+            'body' => [
+                'action' => 'validate',
+                'basename' => $this->basename,
+                'code' => $license_key,
+                'url' => get_site_url(),
+                'activation_id' => $activation_id,
+            ],
+        ]);
+
+        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
+        {
+            $JSON = wp_remote_retrieve_body($request);
+            $response = json_decode($JSON, true);
+
+            return isset($response['status']) && $response['status'] ? $response : [];
+        }
+
+        return [];
+    }
+
+    /**
      * @param string $license_key
      * @return mixed[]
      */
