@@ -199,7 +199,7 @@ class Licensing
             $JSON = wp_remote_retrieve_body($request);
             $response = json_decode($JSON, true);
 
-            return (isset($response['status']) && $response['status']) ? $response : [];
+            return isset($response['status']) && $response['status'] ? $response : [];
         }
 
         return [];
