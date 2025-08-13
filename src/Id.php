@@ -6,7 +6,7 @@ class Id
     /**
      * The single instance of the class.
      *
-     * @var Id
+     * @var Id|null
      */
     protected static ?Id $instance = null;
 
@@ -17,8 +17,8 @@ class Id
     protected static array $IDs = [];
 
     /**
-     * Main Id Instance.
-     * Ensures only one instance of Id is loaded or can be loaded.
+     * Main ID Instance.
+     * Ensures only one instance of ID is loaded or can be loaded.
      *
      * @static
      * @return Id
@@ -41,7 +41,7 @@ class Id
     }
 
     /**
-     * Unserializing instances of this class is forbidden.
+     * Un-serializing instances of this class is forbidden.
      * @return void
      */
     public function __wakeup()
@@ -65,15 +65,10 @@ class Id
         if ($instance->duplicated($id))
         {
             $id = $instance->unique();
+        }
 
-            $instance->add($id);
-            return $id;
-        }
-        else
-        {
-            $instance->add($id);
-            return $id;
-        }
+        $instance->add($id);
+        return $id;
     }
 
     /**
