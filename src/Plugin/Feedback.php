@@ -7,6 +7,10 @@ class Feedback
     public $alert_class;
     public $success_class;
     public $error_class;
+    public $primary_button_class;
+    public $secondary_button_class;
+    public $text_button_class;
+    public $icon_class;
     public $plugin;
     public $basename;
 
@@ -18,6 +22,10 @@ class Feedback
         $this->alert_class = isset($args['alert']) && trim($args['alert']) ? $args['alert'] : 'lsd-alert';
         $this->success_class = isset($args['success']) && trim($args['success']) ? $args['success'] : 'lsd-success';
         $this->error_class = isset($args['error']) && trim($args['error']) ? $args['error'] : 'lsd-error';
+        $this->primary_button_class = isset($args['primary_button_class']) && trim($args['primary_button_class']) ? $args['primary_button_class'] : 'lsd-primary-button';
+        $this->secondary_button_class = isset($args['secondary_button_class']) && trim($args['secondary_button_class']) ? $args['secondary_button_class'] : 'lsd-secondary-button';
+        $this->text_button_class = isset($args['text_button_class']) && trim($args['text_button_class']) ? $args['text_button_class'] : 'lsd-text-button';
+        $this->icon_class = isset($args['icon_class']) && trim($args['icon_class']) ? $args['icon_class'] : 'listdom-icon';
 
         $this->init();
     }
@@ -49,44 +57,68 @@ class Feedback
         ?>
         <div id="web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?>" class="web-dfd-wrapper web-util-hide">
             <form id="web-dfd-form" method="post">
-                <div id="web-dfd-message"></div>
                 <?php wp_nonce_field('_web_dfd_nonce'); ?>
                 <input type="hidden" name="action" value="web_dfd">
                 <input type="hidden" name="basename" value="<?php echo esc_attr($this->basename); ?>">
 
-                <div id="web-dfd-form-caption">
-                    <?php echo esc_html__('If you have a moment, please share why you are deactivating this plugin:', $this->textdomain); ?>
+                <div id="web-dfd-form-caption" class="web-dfd-admin-section-heading">
+                    <h4 class="web-dfd-admin-title"><?php echo esc_html__('Sorry to see you go :(', $this->textdomain) ?></h4>
+                    <p class="web-dfd-admin-description"><?php echo esc_html__('If you have a moment, please share why you are deactivating this plugin:', $this->textdomain); ?></p>
                 </div>
                 <div id="web-dfd-form-body">
+                    <div id="web-dfd-message" class="web-util-hide"></div>
+
+                    <div id="web-dfd-form-reasons">
+                        <?php foreach ($this->reasons() as $reason_key => $reason): ?>
+                            <label for="web-dfd-<?php echo esc_attr($this->plugin); ?>-<?php echo esc_attr($reason_key); ?>">
+                                <div class="web-dfd-input-wrapper">
+                                    <div class="web-dfd-radio-input-wrapper">
+                                        <div class="web-dfd-icon">
+                                            <i class="<?php echo esc_attr($this->icon_class); ?> <?php echo esc_attr($reason['icon']); ?>"></i>
+                                        </div>
+                                        <input id="web-dfd-<?php echo esc_attr($this->plugin); ?>-<?php echo esc_attr($reason_key); ?>"
+                                               class="web-dfd-dialog-input web-util-hide" type="radio" name="reason_key"
+                                               value="<?php echo esc_attr($reason_key); ?>"
+                                               data-target="reason-<?php echo esc_attr($reason_key); ?>">
+                                        <label for="web-dfd-<?php echo esc_attr($this->plugin); ?>-<?php echo esc_attr($reason_key); ?>"
+                                               class="web-dfd-dialog-label"><?php echo esc_html($reason['title']); ?>
+                                        </label>
+                                    </div>
+                                </div>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+
                     <?php foreach ($this->reasons() as $reason_key => $reason): ?>
-                        <div class="web-dfd-input-wrapper">
-                            <div class="web-dfd-radio-input-wrapper">
-                                <input id="web-dfd-<?php echo esc_attr($this->plugin); ?>-<?php echo esc_attr($reason_key); ?>"
-                                       class="web-dfd-dialog-input" type="radio" name="reason_key"
-                                       value="<?php echo esc_attr($reason_key); ?>">
-                                <label for="web-dfd-<?php echo esc_attr($this->plugin); ?>-<?php echo esc_attr($reason_key); ?>"
-                                       class="web-dfd-dialog-label"><?php echo esc_html($reason['title']); ?></label>
-                            </div>
-                            <?php if (trim($reason['placeholder'])): ?>
-                                <div class="web-dfd-text-wrapper web-util-hide">
+                        <?php if (trim($reason['placeholder'])): ?>
+                            <div class="web-dfd-text-wrapper web-util-hide" id="reason-<?php echo esc_attr($reason_key); ?>">
+                                <div class="web-dfd-feedback-text-wrapper">
                                     <input class="web-dfd-feedback-text" type="text"
                                            name="reason_<?php echo esc_attr($reason_key); ?>"
                                            placeholder="<?php echo esc_attr($reason['placeholder']); ?>"
                                            title="<?php echo esc_attr__('Details', $this->textdomain); ?>">
                                 </div>
-                            <?php endif; ?>
-                        </div>
+                            </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
+                    <p class="web-dfd-admin-description">
+                        <?php echo esc_html__('Your feedback ia private and only used for enhancing our products.', $this->textdomain); ?>
+                    </p>
                 </div>
                 <div class="web-dfd-buttons">
                     <button type="submit" name="action_type" value="skip_deactivate" id="skip-deactivate-plugin"
-                            class="web-dfd-button-skip">
+                            class="web-dfd-button-skip <?php echo esc_attr($this->text_button_class); ?>">
                         <?php echo esc_html__('Skip & Deactivate', $this->textdomain); ?>
                     </button>
-                    <button type="submit" name="action_type" value="submit_feedback" id="submit-feedback"
-                            class="button button-primary">
-                        <?php echo esc_html__('Submit & Deactivate', $this->textdomain); ?>
-                    </button>
+                    <div class="web-dfd-buttons-submit">
+                        <button id="web-dfd-button-cancel" class="<?php echo esc_attr($this->secondary_button_class); ?>" type="button">
+                            <?php echo esc_html__('Cancel', $this->textdomain); ?>
+                        </button>
+                        <button type="submit" name="action_type" value="submit_feedback" id="submit-feedback"
+                                class="<?php echo esc_attr($this->primary_button_class); ?>">
+                            <?php echo esc_html__('Submit & Deactivate', $this->textdomain); ?>
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -108,14 +140,21 @@ class Feedback
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form {
             background: #fff;
             border-radius: 10px;
-            box-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            box-shadow: 0 0 10px 0 #0000001A;
             width: 90%;
-            max-width: 500px;
+            max-width: 1000px;
             overflow: hidden;
-            padding: 24px;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-message {
+           width: 100%;
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-message div {
+            width: 100%;
             margin-top: 0;
             font-size: 13px;
         }
@@ -123,28 +162,94 @@ class Feedback
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 0 24px;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-text-wrapper {
+            width: 100%;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-feedback-text-wrapper {
+            display: flex;
+            flex-direction: column;
             gap: 10px;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            border-radius: 10px;
+            padding: 24px;
+            background: #EBF0FF;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-feedback-text-wrapper .web-dfd-feedback-text {
+            width: 100%;
+            height: 100% !important;
+            background: white !important;
+            border: 1px solid #8C8F94 !important;
+            padding: 5px !important;
+            border-radius: 6px !important;
+            font-weight: 400 !important;
+            font-size: 12px !important;
+            line-height: 18px !important;
+            box-shadow: unset !important;
+            min-height: 65px !important;
+            box-sizing: border-box !important;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body #web-dfd-form-reasons {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
             gap: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #E8E8E8;
+            width: 100px;
+            height: 90px;
+            transition: all ease-in-out 0.2s;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper:hover {
+            border: 1px solid #666;
+            color: #666;
+        }
+
+        #web-dfd-form-body .web-dfd-input-wrapper.selected {
+            background: linear-gradient(90deg, #666 0%, #111 100%);
+        }
+
+        #web-dfd-form-body .web-dfd-input-wrapper.selected label {
+            color: white !important;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper .web-dfd-radio-input-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+            height: 100%;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper .web-dfd-radio-input-wrapper .web-dfd-icon i {
+            width: 22px;
+            height: 22px;
+            font-size: 22px;
+            padding: 8px;
+            background: #EFECF5;
+            border-radius: 50%;
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input[type=radio] {
             margin: 0;
-        }
-
-        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input[type=radio]:checked::before {
-            background-color: #8241ff;
-        }
-
-        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input:focus {
-            border-color: #8241ff;
-            box-shadow: 0 0 0 1px #8241ff;
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input[type="text"] {
@@ -152,12 +257,34 @@ class Feedback
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-caption {
-            padding: 0.5rem;
             font-size: 0.8rem;
             font-weight: 500;
             text-align: left;
-            border-bottom: 1px solid #eaeaea;
-            color: #333;
+            padding: 24px;
+            color: #fff;
+            background: linear-gradient(90deg, #666 0%, #111 100%);
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-caption .web-dfd-admin-title {
+            color: white;
+            font-weight: 500 !important;
+            font-size: 20px !important;
+            line-height: 100%;
+            margin: 0;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-admin-section-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> .web-dfd-admin-description {
+            font-family: Inter;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 22px;
+            margin: 0 !important;
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons {
@@ -165,27 +292,16 @@ class Feedback
             align-items: center;
             justify-content: space-between !important;
             gap: 10px;
-            margin-top: 20px;
+            padding: 24px;
+            background: #EFECF5;
         }
 
-        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons .web-dfd-button-skip {
-            background-color: transparent;
-            cursor: pointer;
-            padding: 0 10px;
-            border: none;
-            color: #00000096;
-            border-radius: 3px;
-            box-shadow: none;
-            line-height: 28px;
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons .web-dfd-buttons-submit {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons .web-dfd-button-skip:focus,
-        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons .web-dfd-button-skip:hover,
-        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons .web-dfd-button-skip:active {
-            background: #eaeaea;
-            box-shadow: none;
-            outline-color: #989898;
-        }
         .web-util-hide { display: none !important; }
         </style>
         <script>
@@ -218,6 +334,12 @@ class Feedback
                     }
                 });
 
+                // Close modal on clicking Cancel button
+                jQuery('#web-dfd-button-cancel').on('click', function (event)
+                {
+                    $modal.addClass('web-util-hide');
+                });
+
                 // Handle form submission
                 const $form = $modal.find('#web-dfd-form');
 
@@ -243,6 +365,7 @@ class Feedback
                             {
                                 if (response.success)
                                 {
+                                    $alert.removeClass('web-util-hide');
                                     $alert.html(`<div class="<?php echo $this->alert_class . ' ' . $this->success_class; ?>">${response.message}</div>`);
 
                                     setTimeout(() => $modal.addClass('web-util-hide'), 1000);
@@ -250,11 +373,13 @@ class Feedback
                                 }
                                 else
                                 {
+                                    $alert.removeClass('web-util-hide');
                                     $alert.html(`<div class="<?php echo esc_js($this->alert_class . ' ' . $this->error_class); ?>">${response.message}</div>`);
                                 }
                             },
                             error: function ()
                             {
+                                $alert.removeClass('web-util-hide');
                                 $alert.html(`<div class="<?php echo esc_js($this->alert_class . ' ' . $this->error_class); ?>"><?php echo esc_js(esc_html__('An unexpected error occurred.', $this->textdomain)); ?></div>`);
                             },
                             complete: function ()
@@ -277,19 +402,20 @@ class Feedback
         });
 
         // When a reason is selected
-        jQuery('.web-dfd-dialog-input').on('change', function ()
-        {
-            // Hide all input fields
-            jQuery('.web-dfd-text-wrapper').addClass('web-util-hide');
+        jQuery('.web-dfd-dialog-input').on('change', function () {
 
-            // Show the input field related to the selected radio button
-            if (jQuery(this).is(':checked'))
-            {
-                jQuery(this).closest('.web-dfd-input-wrapper')
-                    .find('.web-dfd-text-wrapper')
-                    .removeClass('web-util-hide');
+            jQuery('.web-dfd-text-wrapper').addClass('web-util-hide');
+            jQuery('.web-dfd-input-wrapper').removeClass('selected');
+            jQuery(this).closest('.web-dfd-input-wrapper').addClass('selected');
+
+            // Show the corresponding text input
+            if (jQuery(this).is(':checked')) {
+                const targetId = jQuery(this).data('target');
+                jQuery('#' + targetId).removeClass('web-util-hide');
             }
         });
+
+
         </script>
         <?php
     }
