@@ -182,17 +182,17 @@ class Feedback
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-feedback-text-wrapper .web-dfd-feedback-text {
             width: 100%;
-            height: 100% !important;
-            background: white !important;
-            border: 1px solid #8C8F94 !important;
-            padding: 5px !important;
-            border-radius: 6px !important;
-            font-weight: 400 !important;
-            font-size: 12px !important;
-            line-height: 18px !important;
-            box-shadow: unset !important;
-            min-height: 65px !important;
-            box-sizing: border-box !important;
+            height: 100%;
+            background: white;
+            border: 1px solid #8C8F94;
+            padding: 5px;
+            border-radius: 6px;
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 18px;
+            box-shadow: unset;
+            min-height: 65px;
+            box-sizing: border-box;
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body #web-dfd-form-reasons {
