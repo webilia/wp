@@ -123,302 +123,302 @@ class Feedback
             </form>
         </div>
         <style>
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background-color: rgba(0, 0, 0, 0.4);
-                z-index: 9999;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                transition: all 0.3s ease-in;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease-in;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form {
-                background: #fff;
-                border-radius: 10px;
-                display: flex;
-                flex-direction: column;
-                gap: 24px;
-                box-shadow: 0 0 10px 0 #0000001A;
-                width: 90%;
-                max-width: 1000px;
-                overflow: hidden;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form {
+            background: #fff;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            box-shadow: 0 0 10px 0 #0000001A;
+            width: 90%;
+            max-width: 1000px;
+            overflow: hidden;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-message {
-                width: 100%;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-message {
+            width: 100%;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-message div {
-                width: 100%;
-                margin-top: 0;
-                font-size: 13px;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-message div {
+            width: 100%;
+            margin-top: 0;
+            font-size: 13px;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 24px;
-                padding: 0 24px;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 0 24px;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-text-wrapper {
-                width: 100%;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-text-wrapper {
+            width: 100%;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-feedback-text-wrapper {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                border-radius: 10px;
-                padding: 24px;
-                background: #EBF0FF;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-feedback-text-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 10px;
+            padding: 24px;
+            background: #EBF0FF;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-feedback-text-wrapper .web-dfd-feedback-text {
-                width: 100%;
-                height: 100%;
-                background: white;
-                border: 1px solid #8C8F94;
-                padding: 5px;
-                border-radius: 6px;
-                font-weight: 400;
-                font-size: 12px;
-                line-height: 18px;
-                box-shadow: unset;
-                min-height: 65px;
-                box-sizing: border-box;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-feedback-text-wrapper .web-dfd-feedback-text {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border: 1px solid #8C8F94;
+            padding: 5px;
+            border-radius: 6px;
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 18px;
+            box-shadow: unset;
+            min-height: 65px;
+            box-sizing: border-box;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body #web-dfd-form-reasons {
-                display: flex;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body #web-dfd-form-reasons {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body #web-dfd-form-reasons label {
-                flex: 1;
-                display: block;
-                cursor: pointer;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body #web-dfd-form-reasons label {
+            flex: 1;
+            display: block;
+            cursor: pointer;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                padding: 12px;
-                border-radius: 10px;
-                border: 1px solid #E8E8E8;
-                height: 90px;
-                transition: all ease-in-out 0.2s;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #E8E8E8;
+            height: 90px;
+            transition: all ease-in-out 0.2s;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper:hover {
-                border: 1px solid #666;
-                color: #666;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper:hover {
+            border: 1px solid #666;
+            color: #666;
+        }
 
-            #web-dfd-form-body .web-dfd-input-wrapper.selected {
-                background: linear-gradient(90deg, #666 0%, #111 100%);
-            }
+        #web-dfd-form-body .web-dfd-input-wrapper.selected {
+            background: linear-gradient(90deg, #666 0%, #111 100%);
+        }
 
-            #web-dfd-form-body .web-dfd-input-wrapper.selected label {
-                color: white !important;
-            }
+        #web-dfd-form-body .web-dfd-input-wrapper.selected label {
+            color: white !important;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper .web-dfd-radio-input-wrapper {
-                display: flex;
-                align-items: center;
-                justify-content: flex-start;
-                flex-direction: column;
-                text-align: center;
-                gap: 12px;
-                height: 100%;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper .web-dfd-radio-input-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+            height: 100%;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper .web-dfd-radio-input-wrapper .web-dfd-icon i {
-                width: 22px;
-                height: 22px;
-                font-size: 22px;
-                padding: 8px;
-                background: #EFECF5;
-                border-radius: 50%;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper .web-dfd-radio-input-wrapper .web-dfd-icon i {
+            width: 22px;
+            height: 22px;
+            font-size: 22px;
+            padding: 8px;
+            background: #EFECF5;
+            border-radius: 50%;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input[type=radio] {
-                margin: 0;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input[type=radio] {
+            margin: 0;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input[type="text"] {
-                width: 100%;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body .web-dfd-input-wrapper input[type="text"] {
+            width: 100%;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-caption {
-                font-size: 0.8rem;
-                font-weight: 500;
-                text-align: left;
-                padding: 24px;
-                color: #fff;
-                background: linear-gradient(90deg, #666 0%, #111 100%);
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-caption {
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: left;
+            padding: 24px;
+            color: #fff;
+            background: linear-gradient(90deg, #666 0%, #111 100%);
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-caption .web-dfd-admin-title {
-                color: white;
-                font-weight: 500 !important;
-                font-size: 20px !important;
-                line-height: 100%;
-                margin: 0;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-caption .web-dfd-admin-title {
+            color: white;
+            font-weight: 500 !important;
+            font-size: 20px !important;
+            line-height: 100%;
+            margin: 0;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-admin-section-heading {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-admin-section-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> .web-dfd-admin-description {
-                font-family: Inter;
-                font-weight: 400;
-                font-size: 14px;
-                line-height: 22px;
-                margin: 0 !important;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> .web-dfd-admin-description {
+            font-family: Inter;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 22px;
+            margin: 0 !important;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons {
-                display: flex;
-                align-items: center;
-                justify-content: space-between !important;
-                gap: 10px;
-                padding: 24px;
-                background: #EFECF5;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between !important;
+            gap: 10px;
+            padding: 24px;
+            background: #EFECF5;
+        }
 
-            #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons .web-dfd-buttons-submit {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
+        #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form .web-dfd-buttons .web-dfd-buttons-submit {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-            .web-util-hide { display: none !important; }
+        .web-util-hide { display: none !important; }
         </style>
         <script>
-            /**
-             * Plugin Deactivation Feedback
-             */
-            jQuery('a#deactivate-<?php echo esc_js($this->plugin); ?>').on('click', function (e)
+        /**
+         * Plugin Deactivation Feedback
+         */
+        jQuery('a#deactivate-<?php echo esc_js($this->plugin); ?>').on('click', function (e)
+        {
+            const $link = jQuery(this);
+
+            if ($link.attr('href').includes('action=deactivate') && $link.attr('href').includes('plugin=<?php echo esc_js($this->plugin); ?>'))
             {
-                const $link = jQuery(this);
+                e.preventDefault();
 
-                if ($link.attr('href').includes('action=deactivate') && $link.attr('href').includes('plugin=<?php echo esc_js($this->plugin); ?>'))
+                // Show the feedback dialog
+                const $modal = jQuery('#web-dfd-wrapper-<?php echo esc_js($this->plugin); ?>');
+                $modal.removeClass('web-util-hide');
+
+                const $alert = $modal.find("#web-dfd-message");
+
+                // Skip Focus
+                $modal.find('#skip-deactivate-plugin').focus();
+
+                // Close modal on clicking outside the content
+                $modal.off('click').on('click', function (event)
                 {
-                    e.preventDefault();
-
-                    // Show the feedback dialog
-                    const $modal = jQuery('#web-dfd-wrapper-<?php echo esc_js($this->plugin); ?>');
-                    $modal.removeClass('web-util-hide');
-
-                    const $alert = $modal.find("#web-dfd-message");
-
-                    // Skip Focus
-                    $modal.find('#skip-deactivate-plugin').focus();
-
-                    // Close modal on clicking outside the content
-                    $modal.off('click').on('click', function (event)
-                    {
-                        if (jQuery(event.target).is($modal))
-                        {
-                            $modal.addClass('web-util-hide');
-                        }
-                    });
-
-                    // Close modal on clicking Cancel button
-                    $modal.find('#web-dfd-button-cancel').on('click', function (event)
+                    if (jQuery(event.target).is($modal))
                     {
                         $modal.addClass('web-util-hide');
-                    });
+                    }
+                });
 
-                    // Handle form submission
-                    const $form = $modal.find('#web-dfd-form');
+                // Close modal on clicking Cancel button
+                $modal.find('#web-dfd-button-cancel').on('click', function (event)
+                {
+                    $modal.addClass('web-util-hide');
+                });
 
-                    // Detect which button was clicked
-                    $form.find('button[type="submit"]').off('click').on('click', function (event)
+                // Handle form submission
+                const $form = $modal.find('#web-dfd-form');
+
+                // Detect which button was clicked
+                $form.find('button[type="submit"]').off('click').on('click', function (event)
+                {
+                    event.preventDefault(); // Prevent default form submission
+                    const actionType = jQuery(this).val(); // Get the button's value (action type)
+
+                    if (actionType === 'submit_feedback')
                     {
-                        event.preventDefault(); // Prevent default form submission
-                        const actionType = jQuery(this).val(); // Get the button's value (action type)
+                        // Submit feedback and deactivate the plugin
+                        const $submitButton = jQuery(this);
+                        $submitButton.prop('disabled', true);
 
-                        if (actionType === 'submit_feedback')
-                        {
-                            // Submit feedback and deactivate the plugin
-                            const $submitButton = jQuery(this);
-                            $submitButton.prop('disabled', true);
-
-                            jQuery.ajax(
+                        jQuery.ajax(
+                            {
+                                url: ajaxurl,
+                                method: 'POST',
+                                data: $form.serialize(),
+                                dataType: "json",
+                                success: function (response)
                                 {
-                                    url: ajaxurl,
-                                    method: 'POST',
-                                    data: $form.serialize(),
-                                    dataType: "json",
-                                    success: function (response)
-                                    {
-                                        if (response.success)
-                                        {
-                                            $alert.removeClass('web-util-hide');
-                                            $alert.html(`<div class="<?php echo $this->alert_class . ' ' . $this->success_class; ?>">${response.message}</div>`);
-
-                                            setTimeout(() => $modal.addClass('web-util-hide'), 1000);
-                                            window.location.href = $link.attr('href');
-                                        }
-                                        else
-                                        {
-                                            $alert.removeClass('web-util-hide');
-                                            $alert.html(`<div class="<?php echo esc_js($this->alert_class . ' ' . $this->error_class); ?>">${response.message}</div>`);
-                                        }
-                                    },
-                                    error: function ()
+                                    if (response.success)
                                     {
                                         $alert.removeClass('web-util-hide');
-                                        $alert.html(`<div class="<?php echo esc_js($this->alert_class . ' ' . $this->error_class); ?>"><?php echo esc_js(esc_html__('An unexpected error occurred.', $this->textdomain)); ?></div>`);
-                                    },
-                                    complete: function ()
-                                    {
-                                        $submitButton.prop('disabled', false);
+                                        $alert.html(`<div class="<?php echo $this->alert_class . ' ' . $this->success_class; ?>">${response.message}</div>`);
+
+                                        setTimeout(() => $modal.addClass('web-util-hide'), 1000);
+                                        window.location.href = $link.attr('href');
                                     }
-                                });
-                        }
-                        else if (actionType === 'skip_deactivate')
-                        {
-                            // Skip feedback and directly deactivate
-                            const $submitButton = jQuery(this);
-                            $submitButton.prop('disabled', true);
+                                    else
+                                    {
+                                        $alert.removeClass('web-util-hide');
+                                        $alert.html(`<div class="<?php echo esc_js($this->alert_class . ' ' . $this->error_class); ?>">${response.message}</div>`);
+                                    }
+                                },
+                                error: function ()
+                                {
+                                    $alert.removeClass('web-util-hide');
+                                    $alert.html(`<div class="<?php echo esc_js($this->alert_class . ' ' . $this->error_class); ?>"><?php echo esc_js(esc_html__('An unexpected error occurred.', $this->textdomain)); ?></div>`);
+                                },
+                                complete: function ()
+                                {
+                                    $submitButton.prop('disabled', false);
+                                }
+                            });
+                    }
+                    else if (actionType === 'skip_deactivate')
+                    {
+                        // Skip feedback and directly deactivate
+                        const $submitButton = jQuery(this);
+                        $submitButton.prop('disabled', true);
 
-                            setTimeout(() => $modal.addClass('web-util-hide'), 1000);
-                            window.location.href = $link.attr('href');
-                        }
-                    });
-                }
-            });
+                        setTimeout(() => $modal.addClass('web-util-hide'), 1000);
+                        window.location.href = $link.attr('href');
+                    }
+                });
+            }
+        });
 
-            // When a reason is selected
-            jQuery('.web-dfd-dialog-input').on('change', function ()
-            {
-                jQuery('.web-dfd-text-wrapper').addClass('web-util-hide');
-                jQuery('.web-dfd-input-wrapper').removeClass('selected');
-                jQuery(this).closest('.web-dfd-input-wrapper').addClass('selected');
+        // When a reason is selected
+        jQuery('.web-dfd-dialog-input').on('change', function ()
+        {
+            jQuery('.web-dfd-text-wrapper').addClass('web-util-hide');
+            jQuery('.web-dfd-input-wrapper').removeClass('selected');
+            jQuery(this).closest('.web-dfd-input-wrapper').addClass('selected');
 
-                // Show the corresponding text input
-                if (jQuery(this).is(':checked')) {
-                    const targetId = jQuery(this).data('target');
-                    jQuery(targetId).removeClass('web-util-hide');
-                }
-            });
+            // Show the corresponding text input
+            if (jQuery(this).is(':checked')) {
+                const targetId = jQuery(this).data('target');
+                jQuery(targetId).removeClass('web-util-hide');
+            }
+        });
         </script>
         <?php
     }
