@@ -441,7 +441,7 @@ class Feedback
 
         // Retrieve the reason selected by the user
         $reason_key = isset($_POST['reason_key']) ? sanitize_text_field($_POST['reason_key']) : '';
-        $reason_detail = isset($_POST['reason_' . $reason_key]) ? sanitize_text_field($_POST['reason_' . $reason_key]) : '';
+        $reason_detail = isset($_POST['reason_' . $reason_key]) ? sanitize_textarea_field($_POST['reason_' . $reason_key]) : '';
 
         // If no reason was selected, return an error response
         if (trim($reason_key) === '')
