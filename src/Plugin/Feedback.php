@@ -93,10 +93,7 @@ class Feedback
                         <?php if (trim($reason['placeholder'])): ?>
                             <div class="web-dfd-text-wrapper web-util-hide" id="web-dfd-<?php echo esc_attr($this->plugin); ?>-reason-<?php echo esc_attr($reason_key); ?>">
                                 <div class="web-dfd-feedback-text-wrapper">
-                                    <input class="web-dfd-feedback-text" type="text"
-                                           name="reason_<?php echo esc_attr($reason_key); ?>"
-                                           placeholder="<?php echo esc_attr($reason['placeholder']); ?>"
-                                           title="<?php echo esc_attr__('Details', $this->textdomain); ?>">
+                                    <textarea class="web-dfd-feedback-text" name="reason_<?php echo esc_attr($reason_key); ?>" placeholder="<?php echo esc_attr($reason['placeholder']); ?>" title="<?php echo esc_attr__('Details', $this->textdomain); ?>"></textarea>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -193,6 +190,7 @@ class Feedback
             box-shadow: unset;
             min-height: 65px;
             box-sizing: border-box;
+            resize: none;
         }
 
         #web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?> #web-dfd-form #web-dfd-form-body #web-dfd-form-reasons {
@@ -370,9 +368,6 @@ class Feedback
                                 {
                                     if (response.success)
                                     {
-                                        $alert.removeClass('web-util-hide');
-                                        $alert.html(`<div class="<?php echo $this->alert_class . ' ' . $this->success_class; ?>">${response.message}</div>`);
-
                                         setTimeout(() => $modal.addClass('web-util-hide'), 1000);
                                         window.location.href = $link.attr('href');
                                     }
