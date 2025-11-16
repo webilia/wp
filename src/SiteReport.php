@@ -20,17 +20,18 @@ class SiteReport
         if ($basename === '' || $url === '' || empty($report)) return false;
 
         $response = wp_remote_post('https://api.webilia.com/report', [
-            'body' => [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+            'body' => wp_json_encode([
                 'basename' => $basename,
                 'url' => $url,
                 'report' => $report,
-            ],
+            ]),
         ]);
 
         if (is_wp_error($response)) return false;
 
-        $code = wp_remote_retrieve_response_code($response);
-
-        return $code === 200;
+        return wp_remote_retrieve_response_code($response) === 200;
     }
 }
