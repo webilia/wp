@@ -23,7 +23,7 @@ class SiteReport
             'body' => [
                 'basename' => $basename,
                 'url' => $url,
-                'report' => json_encode($report),
+                'report' => $report,
             ],
         ]);
 
