@@ -4,11 +4,11 @@ namespace Webilia\WP;
 class Announcements
 {
     /**
-     * Product basename.
+     * Product basenames.
      *
-     * @var string
+     * @var string[]
      */
-    private $basename;
+    private $basenames = [];
 
     /**
      * Announcements server URL.
@@ -27,17 +27,17 @@ class Announcements
     /**
      * Constructor.
      *
-     * @param string $basename
+     * @param string|string[] $basenames
      * @param string|null $url
      * @param string $server
      */
     public function __construct(
-        string $basename,
+        $basenames,
         ?string $url = null,
         string $server = 'https://api.webilia.com/announcements'
     )
     {
-        $this->setBasename($basename);
+        $this->setBasenames((array) $basenames);
         $this->setUrl($url ?? get_site_url());
         $this->setServer($server);
     }
@@ -50,7 +50,26 @@ class Announcements
      */
     public function setBasename(string $basename)
     {
-        $this->basename = sanitize_text_field($basename);
+        $this->setBasenames([$basename]);
+    }
+
+    /**
+     * Set product basenames.
+     *
+     * @param string[] $basenames
+     * @return void
+     */
+    public function setBasenames(array $basenames)
+    {
+        $this->basenames = [];
+
+        foreach ($basenames as $basename)
+        {
+            $basename = sanitize_text_field((string) $basename);
+            if ($basename === '' || in_array($basename, $this->basenames, true)) continue;
+
+            $this->basenames[] = $basename;
+        }
     }
 
     /**
@@ -60,7 +79,17 @@ class Announcements
      */
     public function getBasename(): string
     {
-        return $this->basename;
+        return $this->basenames[0] ?? '';
+    }
+
+    /**
+     * Get product basenames.
+     *
+     * @return string[]
+     */
+    public function getBasenames(): array
+    {
+        return $this->basenames;
     }
 
     /**
@@ -115,7 +144,7 @@ class Announcements
     {
         $request = wp_remote_get($this->server, [
             'body' => array_merge([
-                'product' => $this->basename,
+                'products' => $this->basenames,
                 'url' => $this->url,
             ], $params),
         ]);
