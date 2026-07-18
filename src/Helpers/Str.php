@@ -110,7 +110,7 @@ class Str
      * @param string|null $truthy
      * @return string
      */
-    public static function ternary($string, string $falsy, string $truthy = null): string
+    public static function ternary($string, string $falsy, ?string $truthy = null): string
     {
         // Use string as truthy value
         if (is_null($truthy)) $truthy = $string;

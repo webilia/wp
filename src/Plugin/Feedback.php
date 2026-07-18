@@ -1,19 +1,85 @@
 <?php
 namespace Webilia\WP\Plugin;
 
+// phpcs:disable Generic.Files.LineLength
+
 class Feedback
 {
+    /**
+     * Plugin textdomain.
+     *
+     * @var string
+     */
     public $textdomain;
+
+    /**
+     * Alert CSS class.
+     *
+     * @var string
+     */
     public $alert_class;
+
+    /**
+     * Success CSS class.
+     *
+     * @var string
+     */
     public $success_class;
+
+    /**
+     * Error CSS class.
+     *
+     * @var string
+     */
     public $error_class;
+
+    /**
+     * Primary button CSS class.
+     *
+     * @var string
+     */
     public $primary_button_class;
+
+    /**
+     * Secondary button CSS class.
+     *
+     * @var string
+     */
     public $secondary_button_class;
+
+    /**
+     * Text button CSS class.
+     *
+     * @var string
+     */
     public $text_button_class;
+
+    /**
+     * Icon CSS class.
+     *
+     * @var string
+     */
     public $icon_class;
+
+    /**
+     * Plugin slug.
+     *
+     * @var string
+     */
     public $plugin;
+
+    /**
+     * Plugin basename.
+     *
+     * @var string
+     */
     public $basename;
 
+    /**
+     * Constructor.
+     *
+     * @param array<string, string> $args
+     */
     public function __construct(array $args)
     {
         $this->plugin = $args['plugin'] ?? '';
@@ -30,6 +96,11 @@ class Feedback
         $this->init();
     }
 
+    /**
+     * Initialize hooks.
+     *
+     * @return void
+     */
     public function init()
     {
         add_action('current_screen', function ()
@@ -44,6 +115,11 @@ class Feedback
         add_action('wp_ajax_web_dfd', [$this, 'save']);
     }
 
+    /**
+     * Get feedback reasons.
+     *
+     * @return array<string, array<string, string>>
+     */
     public function reasons(): array
     {
         return [];
@@ -51,6 +127,8 @@ class Feedback
 
     /**
      * Print deactivate feedback dialog.
+     *
+     * @return void
      */
     public function dialog()
     {
@@ -420,6 +498,8 @@ class Feedback
 
     /**
      * Ajax deactivate feedback.
+     *
+     * @return void
      */
     public function save()
     {
@@ -478,6 +558,8 @@ class Feedback
 
     /**
      * Check to see if we're in plugins menu
+     *
+     * @return bool
      */
     private function is_plugins_screen(): bool
     {

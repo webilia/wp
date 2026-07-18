@@ -114,9 +114,9 @@ class Arr
     }
 
     /**
-     * @param array $a
-     * @param array $b
-     * @return array
+     * @param array<mixed> $a
+     * @param array<mixed> $b
+     * @return array<mixed>
      */
     public static function append(array $a, array $b): array
     {

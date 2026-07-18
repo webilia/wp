@@ -6,14 +6,14 @@ class EmailSubscription
     /**
      * Subscribe an email address to Webilia.
      *
-     * @param array $args {
+     * @param array<string, string> $args {
      * @type string $email Required. Email address of the subscriber.
      * @type string $basename Required. Plugin basename.
      * @type string $first_name Optional. Subscriber first name.
      * @type string $last_name Optional. Subscriber last name.
      * }
      *
-     * @return array ['success' => bool, 'message' => string]
+     * @return array{success: bool, message: string}
      */
     public static function subscribe(array $args): array
     {

@@ -8,7 +8,7 @@ class SiteReport
      *
      * @param string $basename Required. Plugin basename.
      * @param string $url Required. Site URL.
-     * @param array $report Required. Report data.
+     * @param array<string, mixed> $report Required. Report data.
      *
      * @return bool
      */

@@ -172,7 +172,7 @@ class Licensing
     /**
      * Validate license and return response details
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function validate(): array
     {

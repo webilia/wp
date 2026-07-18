@@ -50,7 +50,7 @@ class Update
     public function __construct(
         string    $version,
         string    $basename,
-        Licensing $licensing = null,
+        ?Licensing $licensing = null,
         string    $coreVersion = '',
         string    $server = 'https://api.webilia.com/update'
     )

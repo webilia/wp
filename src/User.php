@@ -15,10 +15,10 @@ class User
     /**
      * @param string $user_login
      * @param string $user_email
-     * @param string $password
+     * @param string|null $password
      * @return int|WP_Error
      */
-    public static function register(string $user_login, string $user_email, string $password = null)
+    public static function register(string $user_login, string $user_email, ?string $password = null)
     {
         // Password
         if (!$password) $password = wp_generate_password(12);
