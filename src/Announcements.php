@@ -142,12 +142,12 @@ class Announcements
      */
     public function getAnnouncements(array $params = []): array
     {
-        $request = wp_remote_get($this->server, [
-            'body' => array_merge([
-                'products' => $this->basenames,
-                'url' => $this->url,
-            ], $params),
-        ]);
+        $url = add_query_arg(array_merge($params, [
+            'products' => $this->basenames,
+            'url' => $this->url,
+        ]), $this->server);
+
+        $request = wp_remote_get($url);
 
         $announcements = [];
         if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
