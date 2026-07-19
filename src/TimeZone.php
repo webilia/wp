@@ -133,7 +133,7 @@ class TimeZone
                 '14' => 'Pacific/Honolulu',
             ];
 
-            $timezone = isset($timezones[$offset]) ? $timezones[$offset] : null;
+            $timezone = $timezones[$offset] ?? null;
         }
 
         return $timezone;

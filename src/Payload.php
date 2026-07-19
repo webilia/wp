@@ -20,7 +20,7 @@ class Payload
      * @param mixed $value
      * @return void
      */
-    public static function set(string $key, mixed $value): void
+    public static function set(string $key, $value): void
     {
         self::$vars[$key] = $value;
     }
@@ -31,7 +31,7 @@ class Payload
      */
     public static function get($key)
     {
-        return isset(self::$vars[$key]) ? self::$vars[$key] : null;
+        return self::$vars[$key] ?? null;
     }
 
     /**
