@@ -39,7 +39,12 @@ class Metadata implements MetadataInterface
         if (Arr::not($raw)) return [];
 
         $data = [];
-        foreach ($raw as $key => $val) $data[$key] = isset($val[0]) ? (!is_serialized($val[0]) ? $val[0] : unserialize($val[0])) : null;
+        foreach ($raw as $key => $val)
+        {
+            $value = $val[0] ?? null;
+            $data[$key] = !is_serialized($value) ? $value : unserialize($value);
+        }
+
         return $data;
     }
 

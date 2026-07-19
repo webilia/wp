@@ -4,7 +4,7 @@
     "type": "library",
     "license": "MIT",
     "minimum-stability": "stable",
-    "version": "1.0.21",
+    "version": "1.0.23",
     "autoload": {
         "psr-4": {
             "Webilia\\WP\\": "src/"
@@ -21,6 +21,7 @@
         }
     ],
     "require": {
+        "php": ">=7.4",
         "jenssegers/blade": "^1.4",
         "nesbot/carbon": "^2.62"
     },
@@ -31,7 +32,7 @@
     },
     "scripts": {
         "phpstan": [
-            "vendor/bin/phpstan analyse -c phpstan.neon src"
+            "vendor/bin/phpstan analyse -c phpstan.neon src --memory-limit=1G"
         ],
         "phpcs": [
             "vendor/bin/phpcs"
@@ -39,5 +40,10 @@
         "phpcbf": [
             "vendor/bin/phpcbf"
         ]
+    },
+    "config": {
+        "platform": {
+            "php": "7.4.33"
+        }
     }
 }
