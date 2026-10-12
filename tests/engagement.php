@@ -25,6 +25,7 @@ function get_current_blog_id() { return 1; }
 function get_current_screen() { return (object) ['id' => $GLOBALS['screen'] ?? 'consumer']; }
 function get_option($key, $default = false) { return $GLOBALS['options'][$key] ?? ($key === 'date_format' ? 'Y-m-d' : $default); }
 function update_option($key, $value, $autoload = null) { $GLOBALS['options'][$key] = $value; return true; }
+function wp_clear_scheduled_hook($hook) { unset($GLOBALS['scheduled'][$hook]); }
 function wp_next_scheduled($hook) { return $GLOBALS['scheduled'][$hook] ?? false; }
 function wp_schedule_event($at, $interval, $hook) { $GLOBALS['scheduled'][$hook] = $at; }
 function wp_json_encode($data) { return json_encode($data); }
@@ -84,8 +85,8 @@ Manager::snapshot('two');
 check(count($GLOBALS['calls']) === 2 && strpos($GLOBALS['calls'][1][0], 'two%2Ftwo.php') !== false, 'Different sets retain server targeting.');
 check(Manager::dismiss('one', 'remote:1'), 'Dismiss known ID.');
 check(Manager::snapshot('two')['active_count'] === 1, 'Shared ID dismissal propagates across products.');
-check(!Manager::dismiss('two', 'local:one:local'), 'Cannot dismiss another consumer local item.');
-check(Manager::dismiss('one', 'local:one:local') && Manager::snapshot('same')['active_count'] === 2, 'Local IDs are namespaced.');
+check(!Manager::dismiss('two', 'local:consumer:one:local'), 'Cannot dismiss another consumer local item.');
+check(Manager::dismiss('one', 'local:consumer:one:local') && Manager::snapshot('same')['active_count'] === 2, 'Local IDs are namespaced.');
 $key = feedKey(); $cache = $GLOBALS['options'][$key];
 $cache['success'] = time() - 90000; $cache['attempt'] = $cache['success']; $GLOBALS['options'][$key] = $cache;
 $GLOBALS['remote'] = false;
@@ -129,4 +130,6 @@ foreach ([false, ['code' => 500, 'body' => '{"status":1}'], ['code' => 200, 'bod
     $GLOBALS['feedback_remote'] = $bad; check(response([Feedback::class, 'dispatch'])->status === 502, 'Failed feedback keeps deactivation optional.');
 }
 $_POST['basename'] = 'unregistered/plugin.php'; check(response([Feedback::class, 'dispatch'])->status === 400, 'Unknown plugin cannot be submitted.');
+Manager::unregister('one'); check(count($GLOBALS['scheduled']) === 1, 'Another consumer keeps shared cron.');
+Manager::unregister('same'); Manager::unregister('two'); check(!$GLOBALS['scheduled'], 'Last consumer removes cron.');
 echo "WordPress engagement checks passed.\n";

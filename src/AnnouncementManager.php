@@ -48,10 +48,23 @@ final class AnnouncementManager
     }
 
     /**
+     * Stop scheduled work when the final registered consumer is deactivated.
+     *
+     * @param string $consumer
+     * @return void
+     */
+    public static function unregister(string $consumer): void
+    {
+        unset(self::$consumers[$consumer]);
+        if (!self::$consumers) wp_clear_scheduled_hook(self::CRON_HOOK);
+    }
+
+    /**
      * @return void
      */
     public static function schedule(): void
     {
+        if (!self::$consumers) return;
         if (!wp_next_scheduled(self::CRON_HOOK)) wp_schedule_event(time() + 86400, 'daily', self::CRON_HOOK);
     }
 
@@ -124,7 +137,7 @@ final class AnnouncementManager
         $locals = is_callable($config['local_items']) ? call_user_func($config['local_items']) : $config['local_items'];
         foreach ((array) $locals as $raw) {
             if (!is_array($raw) || !isset($raw['id'])) continue;
-            $id = !empty($raw['shared']) ? 'local:shared:' : 'local:' . $consumer . ':';
+            $id = !empty($raw['shared']) ? 'local:shared:' : 'local:consumer:' . $consumer . ':';
             $item = self::normalize($raw, $id . (string) $raw['id']);
             if ($item) $items[] = $item;
         }
