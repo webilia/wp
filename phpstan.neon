@@ -1,6 +1,8 @@
 parameters:
-	level: 6
-	paths:
-		- src
+    scanFiles:
+        - tests/phpstan-ui.php
+    level: 6
+    paths:
+        - src
 includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon

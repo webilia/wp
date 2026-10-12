@@ -64,3 +64,48 @@ new Update(
     'https://api.webilia.com/update' // URL of Update Server
 );
 ````
+## Shared plugin engagement (1.1)
+
+Announcements and feedback are opt-in. Their presentation requires `webilia/ui:^1.4`; existing WP utilities and legacy feedback do not require that package. Supply URLs to each package root, including on multisite. Load matching UI versions across consumers because `webilia-ui-v1-*` assets share registration handles.
+
+```php
+use Webilia\WP\AnnouncementManager;
+use Webilia\WP\Plugin\UIFeedback;
+
+AnnouncementManager::register('example', [
+    'basenames' => [plugin_basename(EXAMPLE_FILE)],
+    'screens' => ['toplevel_page_example'],
+    'capability' => 'manage_options',
+    'title' => __('Announcements', 'example'),
+    'labels' => $translatedAnnouncementLabels,
+    'ui_url' => EXAMPLE_URL . 'vendor/webilia/ui/',
+    'package_url' => EXAMPLE_URL . 'vendor/webilia/wp/',
+    'local_items' => [], // array or callable; each item needs id and title
+]);
+// Append this to the shared Header's actions. The footer automatically renders its drawer.
+$actions[] = AnnouncementManager::action('example');
+
+new UIFeedback([
+    'plugin' => 'example', 'basename' => plugin_basename(EXAMPLE_FILE), 'textdomain' => 'example',
+    'ui_url' => EXAMPLE_URL . 'vendor/webilia/ui/',
+    'package_url' => EXAMPLE_URL . 'vendor/webilia/wp/',
+    'title' => __('Deactivate Example', 'example'),
+    'description' => __('Please share your experience.', 'example'),
+    'disclosure' => __('Submitting sends the site URL, selected reason and optional comments to Webilia.', 'example'),
+    'privacy_url' => 'https://webilia.com/privacy-policy/',
+    'labels' => $translatedFeedbackLabels,
+    'reason_required' => __('Please select a reason.', 'example'),
+    'error' => __('Could not send feedback. You can skip and deactivate.', 'example'),
+    'reasons' => ['other' => ['title' => __('Other', 'example'), 'icon' => 'question', 'placeholder' => __('Details', 'example')]],
+]);
+```
+
+Register before `init`/`current_screen`, normally on `plugins_loaded`. The manager enqueues only configured screens and checks capability. `snapshot(consumer)` fetches initially with a five-second timeout, then refreshes daily; failures retry after one hour and retain the last successful feed for seven days. Successful empty lists replace prior items. One daily cron hook processes distinct configurations once. Each site keeps its own non-autoloaded cache and dismissals. Product sets are fetched separately to preserve the API's targeting/exclusion rules.
+
+Remote IDs use `remote:` plus the server ID; local IDs use `local:consumer:id`, or `local:shared:id` when an item explicitly has `shared: true`. Local/remote payloads accept API fields `body`, `severity`, `priority`, `start_at`, `end_at`, and `cta`, or `description`, `created_at`, `expires_at`, `url`, and `cta_label`. The manager sanitizes HTML/URLs and applies dates before counting. Register the same local shared ID only for intentionally identical items.
+
+`Announcements::getAnnouncements()` retains its array-only contract. `AnnouncementClient::fetch()` and the updated base client's `fetch()` return `['success' => bool, 'items' => array]`. The extension remains usable if another plugin loads the preceding base class first.
+
+The new Feedback base registers one `web_dfd` dispatcher and retains legacy constructor arguments and `reasons()`, `dialog()`, and `save()` overrides. It also supports explicit `ui: true`. Prefer `UIFeedback`, an adapter extending that same base, for products using the new UI: its isolated `webilia_feedback` action works alongside plugins bundling the older base class. Exact basenames select handlers, with capability and target-specific nonce checks. Skip/Cancel make no request; bulk deactivation is left native. A failed submission never forces deactivation.
+
+Run `composer run test`, `npm ci`, and `npm test`. Package release order: merge/tag UI 1.4, then WP 1.1, then update consumer locks to those stable releases. Never tag an unmerged branch. Keep legacy products on their presentation until their separate migrations.
