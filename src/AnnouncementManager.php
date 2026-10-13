@@ -293,7 +293,8 @@ final class AnnouncementManager
         if (!current_user_can($config['capability']) || isset(self::$rendered[$consumer])) return '';
         self::$rendered[$consumer] = true;
         $snapshot = self::snapshot($consumer);
-        $props = ['id' => 'webilia-announcements-' . $consumer, 'title' => $config['title'], 'labels' => $config['labels']];
+        $props = ['id' => 'webilia-announcements-' . $consumer, 'title' => $config['title'],
+            'labels' => $config['labels'], 'class' => $config['class'] ?? ''];
         foreach (['active', 'dismissed'] as $state) {
             $props[$state] = array_values(array_filter($snapshot['items'], static function ($item) use ($state): bool {
                 return $item['state'] === $state;

@@ -77,6 +77,7 @@ AnnouncementManager::register('example', [
     'screens' => ['toplevel_page_example'],
     'capability' => 'manage_options',
     'title' => __('Announcements', 'example'),
+    'class' => 'example-theme', // Theme variables belong on the separate drawer root.
     'labels' => $translatedAnnouncementLabels,
     'ui_url' => EXAMPLE_URL . 'vendor/webilia/ui/',
     'package_url' => EXAMPLE_URL . 'vendor/webilia/wp/',
