@@ -66,6 +66,12 @@ new Update(
 ````
 ## Shared plugin engagement (1.1)
 
+The intended stable release is `v1.1.0`, with browser adapter versions provided by `Webilia\WP\Version::VALUE`.
+The earlier `v1.0.25` tag already contains engagement services; do not move that tag. After the matching
+UI `v1.4.0` release is available, tag the reviewed, merged WP commit as `v1.1.0` and verify an authenticated
+Composer consumer resolves it before updating product lockfiles. The release tag, this documentation,
+and `Version::VALUE` must agree.
+
 Announcements and feedback are opt-in. Their presentation requires `webilia/ui:^1.4`; existing WP utilities and legacy feedback do not require that package. Supply URLs to each package root, including on multisite. Load matching UI versions across consumers because `webilia-ui-v1-*` assets share registration handles.
 
 ```php
@@ -94,6 +100,7 @@ new UIFeedback([
     'description' => __('Please share your experience.', 'example'),
     'disclosure' => __('Submitting sends the site URL, selected reason and optional comments to Webilia.', 'example'),
     'privacy_url' => 'https://webilia.com/privacy-policy/',
+    'terms_url' => 'https://webilia.com/terms-and-conditions/', // Optional; rendered by UI 1.4.
     'labels' => $translatedFeedbackLabels,
     'reason_required' => __('Please select a reason.', 'example'),
     'error' => __('Could not send feedback. You can skip and deactivate.', 'example'),

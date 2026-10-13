@@ -175,3 +175,29 @@ check($GLOBALS['site_options'][1]['webilia_announcements_consumers_v1'] === ['ma
 check($GLOBALS['site_options'][2]['webilia_announcements_consumers_v1'] === ['sub-only' => ['sub/sub.php']], 'Subsite-only consumer absent from current process survives.');
 check($GLOBALS['blog'] === 1, 'Mixed-consumer cleanup restores context.');
 echo "WordPress engagement checks passed.\n";
+
+// The actual enqueue paths must use one release version and valid package roots.
+class UIAssetsDouble {
+    public static function enqueue($components, $url) { $GLOBALS['ui_assets'][] = [$components, $url]; }
+}
+class_alias(UIAssetsDouble::class, 'Webilia\\UI\\WordPress\\Assets');
+function wp_enqueue_script($handle, $source, $deps, $version, $footer) {
+    $GLOBALS['scripts'][$handle] = compact('source', 'deps', 'version', 'footer');
+}
+$GLOBALS['multisite'] = false;
+$GLOBALS['screen'] = 'plugins';
+$GLOBALS['remote'] = ['code' => 200, 'body' => '[]'];
+$GLOBALS['scripts'] = [];
+Manager::register('versioned', ['basenames' => ['versioned/plugin.php'], 'screens' => ['plugins'],
+    'ui_url' => 'https://site.test/ui/', 'package_url' => 'https://site.test/wp/']);
+Manager::enqueue();
+$versioned = new \Webilia\WP\Plugin\UIFeedback(['basename' => 'versioned/plugin.php', 'plugin' => 'versioned',
+    'ui_url' => 'https://site.test/ui/', 'package_url' => 'https://site.test/wp/']);
+$versioned->enqueue();
+foreach (['announcements', 'deactivation'] as $component) {
+    $script = $GLOBALS['scripts']['webilia-wp-v1-' . $component];
+    check($script['version'] === \Webilia\WP\Version::VALUE, 'Engagement assets share the package release version.');
+    check($script['source'] === 'https://site.test/wp/assets/js/' . $component . '.js', 'Adapter URL uses the supplied package root.');
+    check($script['deps'] === ['webilia-ui-v1-' . $component], 'Adapter waits for its shared UI controller.');
+}
+echo "Engagement asset release checks passed.\n";
