@@ -2,6 +2,8 @@
 
 namespace Webilia\WP\Plugin;
 
+use Webilia\WP\Version;
+
 /** Optional presentation/submission adapter shared by Feedback and its compatibility subclass. */
 trait FeedbackUI
 {
@@ -23,7 +25,7 @@ trait FeedbackUI
             || !current_user_can('deactivate_plugin', $this->basename)) return;
         \Webilia\UI\WordPress\Assets::enqueue(['deactivation'], $this->ui_config['ui_url']);
         wp_enqueue_script('webilia-wp-v1-deactivation', rtrim($this->ui_config['package_url'], '/') . '/assets/js/deactivation.js',
-            ['webilia-ui-v1-deactivation'], '1.1.0', true);
+            ['webilia-ui-v1-deactivation'], Version::VALUE, true);
     }
 
     /**

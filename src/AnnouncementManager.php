@@ -331,7 +331,7 @@ final class AnnouncementManager
             self::snapshot($consumer);
             Assets::enqueue(['announcements'], $config['ui_url']);
             wp_enqueue_script('webilia-wp-v1-announcements', rtrim($config['package_url'], '/') . '/assets/js/announcements.js',
-                ['webilia-ui-v1-announcements'], '1.1.0', true);
+                ['webilia-ui-v1-announcements'], Version::VALUE, true);
         }
     }
 
