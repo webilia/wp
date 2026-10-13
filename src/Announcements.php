@@ -3,6 +3,7 @@ namespace Webilia\WP;
 
 class Announcements
 {
+    use AnnouncementFetch;
     /**
      * Product basenames.
      *
@@ -142,22 +143,8 @@ class Announcements
      */
     public function getAnnouncements(array $params = []): array
     {
-        $url = add_query_arg(array_merge($params, [
-            'products' => $this->basenames,
-            'url' => $this->url,
-        ]), $this->server);
-
-        $request = wp_remote_get($url);
-
-        $announcements = [];
-        if (!is_wp_error($request) && wp_remote_retrieve_response_code($request) === 200)
-        {
-            $body = wp_remote_retrieve_body($request);
-            $response = json_decode($body, true);
-
-            if (is_array($response)) $announcements = $response;
-        }
-
-        return $announcements;
+        $result = $this->fetch($params);
+        return $result['success'] ? $result['items'] : [];
     }
+
 }

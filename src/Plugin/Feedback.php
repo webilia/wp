@@ -5,6 +5,10 @@ namespace Webilia\WP\Plugin;
 
 class Feedback
 {
+    use FeedbackUI;
+    /** @var array<string, mixed> */
+    protected $ui_config = [];
+
     /**
      * Plugin textdomain.
      *
@@ -82,6 +86,7 @@ class Feedback
      */
     public function __construct(array $args)
     {
+        $this->ui_config = $args;
         $this->plugin = $args['plugin'] ?? '';
         $this->basename = $args['basename'] ?? '';
         $this->textdomain = $args['textdomain'] ?? $this->plugin;
@@ -107,12 +112,14 @@ class Feedback
         {
             if (!$this->is_plugins_screen()) return;
 
+            if (!empty($this->ui_config['ui'])) add_action('admin_enqueue_scripts', [$this, 'enqueue']);
             // Print Dialog
             add_action('admin_footer', [$this, 'dialog']);
         });
 
         // Ajax
-        add_action('wp_ajax_web_dfd', [$this, 'save']);
+        FeedbackRegistry::register($this);
+        FeedbackRegistry::legacyHook();
     }
 
     /**
@@ -122,7 +129,7 @@ class Feedback
      */
     public function reasons(): array
     {
-        return [];
+        return $this->ui_config['reasons'] ?? [];
     }
 
     /**
@@ -132,6 +139,10 @@ class Feedback
      */
     public function dialog()
     {
+        if (!empty($this->ui_config['ui'])) {
+            $this->uiDialog();
+            return;
+        }
         ?>
         <div id="web-dfd-wrapper-<?php echo esc_attr($this->plugin); ?>" class="web-dfd-wrapper web-util-hide">
             <form id="web-dfd-form" method="post">
@@ -503,6 +514,16 @@ class Feedback
      */
     public function save()
     {
+        if (!empty($this->ui_config['ui'])) {
+            $this->saveShared();
+            return;
+        }
+
+        if ($this->posted('basename') !== $this->basename) return;
+        if (!current_user_can('deactivate_plugin', $this->basename)) {
+            wp_send_json_error(['message' => __('You do not have permission to deactivate this plugin.', $this->textdomain)], 403);
+        }
+
         // Check nonce for security
         check_ajax_referer('_web_dfd_nonce');
 
@@ -524,7 +545,7 @@ class Feedback
         $reason_detail = isset($_POST['reason_' . $reason_key]) ? sanitize_textarea_field($_POST['reason_' . $reason_key]) : '';
 
         // If no reason was selected, return an error response
-        if (trim($reason_key) === '')
+        if (trim($reason_key) === '' || !isset($this->reasons()[$reason_key]))
         {
             echo json_encode(['success' => 0, 'message' => esc_html__('Please select a reason before deactivating the plugin.', $this->textdomain)], JSON_NUMERIC_CHECK);
             exit;
@@ -554,6 +575,16 @@ class Feedback
         // Return success response
         echo json_encode(['success' => 1, 'message' => esc_html__('Thank you for your feedback!', $this->textdomain)], JSON_NUMERIC_CHECK);
         exit;
+    }
+
+    /**
+     * Route before any instance validates a nonce or terminates the request.
+     *
+     * @return void
+     */
+    public static function dispatch(): void
+    {
+        FeedbackRegistry::dispatch();
     }
 
     /**

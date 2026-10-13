@@ -1,0 +1,10 @@
+{
+  "name": "@webilia/wp-tests",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/js/*.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}
