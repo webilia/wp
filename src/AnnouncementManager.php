@@ -11,6 +11,7 @@ use Webilia\UI\WordPress\Assets;
 final class AnnouncementManager
 {
     public const CRON_HOOK = 'webilia_announcements_refresh';
+    private const REGISTRY = 'webilia_announcements_consumers_v1';
     private const DISMISSALS = 'webilia_announcements_dismissed_v1';
     /** @var array<string, array<string, mixed>> */
     private static $consumers = [];
@@ -58,9 +59,9 @@ final class AnnouncementManager
     public static function unregister(string $consumer, bool $networkWide = false): void
     {
         unset(self::$consumers[$consumer]);
-        if (self::$consumers) return;
         if (!$networkWide || !is_multisite()) {
-            wp_clear_scheduled_hook(self::CRON_HOOK);
+            self::storeRegistry();
+            if (!self::$consumers) wp_clear_scheduled_hook(self::CRON_HOOK);
             return;
         }
 
@@ -70,7 +71,17 @@ final class AnnouncementManager
             foreach ($sites as $site) {
                 switch_to_blog((int) $site);
                 try {
-                    wp_clear_scheduled_hook(self::CRON_HOOK);
+                    $registry = array_merge((array) get_option(self::REGISTRY, []), self::registry());
+                    unset($registry[$consumer]);
+                    $active = array_merge((array) get_option('active_plugins', []),
+                        array_keys((array) get_site_option('active_sitewide_plugins', [])));
+                    $remaining = [];
+                    foreach ($registry as $id => $basenames) {
+                        if (is_array($basenames) && array_intersect($basenames, $active)) $remaining[$id] = $basenames;
+                    }
+
+                    update_option(self::REGISTRY, $remaining, false);
+                    if (!$remaining) wp_clear_scheduled_hook(self::CRON_HOOK);
                 } finally {
                     restore_current_blog();
                 }
@@ -86,7 +97,26 @@ final class AnnouncementManager
     public static function schedule(): void
     {
         if (!self::$consumers) return;
+        self::storeRegistry();
         if (!wp_next_scheduled(self::CRON_HOOK)) wp_schedule_event(time() + 86400, 'daily', self::CRON_HOOK);
+    }
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    private static function registry(): array
+    {
+        $registry = [];
+        foreach (self::$consumers as $consumer => $config) $registry[$consumer] = $config['basenames'];
+        return $registry;
+    }
+
+    /**
+     * @return void
+     */
+    private static function storeRegistry(): void
+    {
+        update_option(self::REGISTRY, self::registry(), false);
     }
 
     /**

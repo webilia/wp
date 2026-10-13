@@ -23,9 +23,10 @@ function add_action($hook, $callback) { $GLOBALS['hooks'][$hook][] = $callback; 
 function get_site_url() { return 'https://site.test'; }
 function get_current_blog_id() { return 1; }
 function get_current_screen() { return (object) ['id' => $GLOBALS['screen'] ?? 'consumer']; }
-function get_option($key, $default = false) { return $GLOBALS['options'][$key] ?? ($key === 'date_format' ? 'Y-m-d' : $default); }
+function get_option($key, $default = false) { if (($GLOBALS['multisite'] ?? false) && isset($GLOBALS['site_options'][$GLOBALS['blog'] ?? 1][$key])) return $GLOBALS['site_options'][$GLOBALS['blog'] ?? 1][$key]; return $GLOBALS['options'][$key] ?? ($key === 'date_format' ? 'Y-m-d' : $default); }
 function add_option($key, $value, $deprecated = '', $autoload = null) { if (array_key_exists($key, $GLOBALS['options'])) return false; $GLOBALS['options'][$key] = $value; $GLOBALS['added_options'][] = [$key, $autoload]; return true; }
-function update_option($key, $value, $autoload = null) { $GLOBALS['options'][$key] = $value; return true; }
+function get_site_option($key, $default = false) { return $GLOBALS['network_options'][$key] ?? $default; }
+function update_option($key, $value, $autoload = null) { if ($GLOBALS['multisite'] ?? false) { $GLOBALS['site_options'][$GLOBALS['blog'] ?? 1][$key] = $value; return true; } $GLOBALS['options'][$key] = $value; return true; }
 function wp_clear_scheduled_hook($hook) { unset($GLOBALS['scheduled'][$hook]); $GLOBALS['cleared_sites'][] = $GLOBALS['blog'] ?? 1; }
 function is_multisite() { return $GLOBALS['multisite'] ?? false; }
 function get_current_network_id() { return 5; }
@@ -159,4 +160,18 @@ Manager::register('network', ['basenames' => ['network/network.php']]);
 Manager::schedule(); Manager::unregister('network', true);
 check($GLOBALS['cleared_sites'] === range(1, 101), 'Network-wide final deactivation clears every site across paginated results.');
 check($GLOBALS['blog'] === 1 && !$GLOBALS['blog_stack'], 'Network cleanup restores original blog.');
+// A local consumer on the main blog must not prevent orphan cleanup elsewhere.
+Manager::register('network', ['basenames' => ['network/network.php']]);
+Manager::register('main-only', ['basenames' => ['main/main.php']]);
+Manager::schedule();
+$GLOBALS['network_options']['active_sitewide_plugins'] = ['network/network.php' => time()];
+$GLOBALS['site_options'][1]['active_plugins'] = ['main/main.php'];
+$GLOBALS['site_options'][2]['active_plugins'] = ['sub/sub.php'];
+$GLOBALS['site_options'][2]['webilia_announcements_consumers_v1'] = ['sub-only' => ['sub/sub.php']];
+$GLOBALS['cleared_sites'] = [];
+Manager::unregister('network', true);
+check($GLOBALS['cleared_sites'] === range(3, 101), 'Cleanup determines remaining active consumers separately for every site.');
+check($GLOBALS['site_options'][1]['webilia_announcements_consumers_v1'] === ['main-only' => ['main/main.php']], 'Current-site consumer survives.');
+check($GLOBALS['site_options'][2]['webilia_announcements_consumers_v1'] === ['sub-only' => ['sub/sub.php']], 'Subsite-only consumer absent from current process survives.');
+check($GLOBALS['blog'] === 1, 'Mixed-consumer cleanup restores context.');
 echo "WordPress engagement checks passed.\n";
