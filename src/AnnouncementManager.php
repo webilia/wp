@@ -186,7 +186,7 @@ final class AnnouncementManager
         $url = $raw['url'] ?? ($cta['url'] ?? '');
         $label = $raw['cta_label'] ?? ($cta['label'] ?? '');
         return ['id' => $id, 'title' => sanitize_text_field((string) $raw['title']),
-            'description_html' => wp_kses_post(is_scalar($description) ? (string) $description : ''),
+            'description_html' => nl2br(wp_kses_post(is_scalar($description) ? (string) $description : ''), false),
             'url' => esc_url_raw(is_scalar($url) ? (string) $url : '', ['http', 'https']),
             'cta_label' => sanitize_text_field(is_scalar($label) ? (string) $label : ''),
             'severity' => $severity, 'priority' => is_numeric($raw['priority'] ?? null) ? (int) $raw['priority'] : 0,

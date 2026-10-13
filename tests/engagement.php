@@ -64,7 +64,7 @@ foreach ([false, ['code' => 503, 'body' => '[]'], ['code' => 200, 'body' => '{}'
 }
 $GLOBALS['calls'] = [];
 $GLOBALS['remote'] = ['code' => 200, 'body' => json_encode([
-    ['id' => 1, 'title' => 'Shared', 'body' => '<script>bad()</script><strong>safe</strong>', 'priority' => 5, 'cta' => ['label' => 'Danger', 'url' => 'javascript:bad()']],
+    ['id' => 1, 'title' => 'Shared', 'body' => "<script>bad()</script><strong>safe</strong>\n\nNext line\r\nSignature\rTeam", 'priority' => 5, 'cta' => ['label' => 'Danger', 'url' => 'javascript:bad()']],
     ['id' => 2, 'title' => 'Future', 'start_at' => time() + 1000],
     ['id' => 3, 'title' => 'Expired', 'end_at' => time() - 1000],
     ['id' => 4, 'title' => 'Low priority', 'priority' => 1],
@@ -79,6 +79,7 @@ $a = Manager::snapshot('one');
 check(count($GLOBALS['calls']) === 1 && $GLOBALS['calls'][0][1]['timeout'] === 5, 'First load uses bounded fetch.');
 check($a['active_count'] === 3 && $a['items'][0]['id'] === 'remote:1', 'Scheduling, expiration, and priority.');
 check($a['items'][0]['url'] === '' && strpos($a['items'][0]['description_html'], '<script>') === false, 'Remote sanitation.');
+check(strpos($a['items'][0]['description_html'], "<strong>safe</strong><br>\n<br>\nNext line<br>\r\nSignature<br>\rTeam") !== false, 'Preserve paragraphs and LF/CRLF/CR lines as br tags after sanitation.');
 Manager::snapshot('same'); Manager::snapshot('one');
 check(count($GLOBALS['calls']) === 1, 'Identical product sets reuse cache.');
 Manager::snapshot('two');
