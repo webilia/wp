@@ -24,8 +24,14 @@ function get_site_url() { return 'https://site.test'; }
 function get_current_blog_id() { return 1; }
 function get_current_screen() { return (object) ['id' => $GLOBALS['screen'] ?? 'consumer']; }
 function get_option($key, $default = false) { return $GLOBALS['options'][$key] ?? ($key === 'date_format' ? 'Y-m-d' : $default); }
+function add_option($key, $value, $deprecated = '', $autoload = null) { if (array_key_exists($key, $GLOBALS['options'])) return false; $GLOBALS['options'][$key] = $value; $GLOBALS['added_options'][] = [$key, $autoload]; return true; }
 function update_option($key, $value, $autoload = null) { $GLOBALS['options'][$key] = $value; return true; }
-function wp_clear_scheduled_hook($hook) { unset($GLOBALS['scheduled'][$hook]); }
+function wp_clear_scheduled_hook($hook) { unset($GLOBALS['scheduled'][$hook]); $GLOBALS['cleared_sites'][] = $GLOBALS['blog'] ?? 1; }
+function is_multisite() { return $GLOBALS['multisite'] ?? false; }
+function get_current_network_id() { return 5; }
+function get_sites($args) { check($args['network_id'] === 5, 'Cleanup stays in current network.'); return array_slice(range(1, 101), $args['offset'], $args['number']); }
+function switch_to_blog($id) { $GLOBALS['blog_stack'][] = $GLOBALS['blog'] ?? 1; $GLOBALS['blog'] = $id; }
+function restore_current_blog() { $GLOBALS['blog'] = array_pop($GLOBALS['blog_stack']); }
 function wp_next_scheduled($hook) { return $GLOBALS['scheduled'][$hook] ?? false; }
 function wp_schedule_event($at, $interval, $hook) { $GLOBALS['scheduled'][$hook] = $at; }
 function wp_json_encode($data) { return json_encode($data); }
@@ -70,6 +76,9 @@ $GLOBALS['remote'] = ['code' => 200, 'body' => json_encode([
     ['id' => 4, 'title' => 'Low priority', 'priority' => 1],
 ])];
 $config = ['basenames' => ['one/one.php'], 'screens' => ['consumer'], 'local_items' => [['id' => 'local', 'title' => 'Local']]];
+foreach ([[''], ['<b></b>']] as $invalid) {
+    try { Manager::register('invalid', ['basenames' => $invalid]); throw new RuntimeException('Empty normalized product set accepted.'); } catch (InvalidArgumentException $expected) {}
+}
 Manager::register('one', $config);
 Manager::register('same', $config);
 Manager::register('two', ['basenames' => ['two/two.php']]);
@@ -86,8 +95,20 @@ Manager::snapshot('two');
 check(count($GLOBALS['calls']) === 2 && strpos($GLOBALS['calls'][1][0], 'two%2Ftwo.php') !== false, 'Different sets retain server targeting.');
 check(Manager::dismiss('one', 'remote:1'), 'Dismiss known ID.');
 check(Manager::snapshot('two')['active_count'] === 1, 'Shared ID dismissal propagates across products.');
+check(Manager::dismiss('two', 'remote:4'), 'Independent second ID dismissal.');
+check(count($GLOBALS['added_options']) === 2 && $GLOBALS['added_options'][0][0] !== $GLOBALS['added_options'][1][0]
+    && $GLOBALS['added_options'][0][1] === false, 'Distinct dismissals write independent non-autoloaded options.');
+check(Manager::snapshot('two')['active_count'] === 0, 'Both independent dismissals persist.');
+// Preserve the aggregate records of installations running the preceding branch revision.
+$GLOBALS['options']['webilia_announcements_dismissed_v1'] = ['remote:4' => time()];
+Manager::register('custom', ['basenames' => ['one/one.php'], 'server' => 'https://other.test/announcements']);
+Manager::register('custom-same', ['basenames' => ['two/two.php'], 'server' => 'https://other.test/announcements']);
+$custom = Manager::snapshot('custom');
+check($custom['active_count'] === 2 && $custom['items'][0]['id'] !== 'remote:1', 'Independent servers do not inherit published-service dismissals.');
+check(Manager::dismiss('custom', $custom['items'][0]['id']) && Manager::snapshot('custom-same')['active_count'] === 1, 'Same custom server shares stable dismissal IDs across products.');
+Manager::unregister('custom'); Manager::unregister('custom-same');
 check(!Manager::dismiss('two', 'local:consumer:one:local'), 'Cannot dismiss another consumer local item.');
-check(Manager::dismiss('one', 'local:consumer:one:local') && Manager::snapshot('same')['active_count'] === 2, 'Local IDs are namespaced.');
+check(Manager::dismiss('one', 'local:consumer:one:local') && Manager::snapshot('same')['active_count'] === 1, 'Local IDs are namespaced.');
 $key = feedKey(); $cache = $GLOBALS['options'][$key];
 $cache['success'] = time() - 90000; $cache['attempt'] = $cache['success']; $GLOBALS['options'][$key] = $cache;
 $GLOBALS['remote'] = false;
@@ -133,4 +154,9 @@ foreach ([false, ['code' => 500, 'body' => '{"status":1}'], ['code' => 200, 'bod
 $_POST['basename'] = 'unregistered/plugin.php'; check(response([Feedback::class, 'dispatch'])->status === 400, 'Unknown plugin cannot be submitted.');
 Manager::unregister('one'); check(count($GLOBALS['scheduled']) === 1, 'Another consumer keeps shared cron.');
 Manager::unregister('same'); Manager::unregister('two'); check(!$GLOBALS['scheduled'], 'Last consumer removes cron.');
+$GLOBALS['multisite'] = true; $GLOBALS['cleared_sites'] = [];
+Manager::register('network', ['basenames' => ['network/network.php']]);
+Manager::schedule(); Manager::unregister('network', true);
+check($GLOBALS['cleared_sites'] === range(1, 101), 'Network-wide final deactivation clears every site across paginated results.');
+check($GLOBALS['blog'] === 1 && !$GLOBALS['blog_stack'], 'Network cleanup restores original blog.');
 echo "WordPress engagement checks passed.\n";

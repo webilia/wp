@@ -31,6 +31,7 @@ final class AnnouncementManager
         }
 
         $basenames = array_values(array_unique(array_filter(array_map('sanitize_text_field', (array) $config['basenames']))));
+        if (!$basenames) throw new InvalidArgumentException('Actual product basenames are required.');
         sort($basenames);
         self::$consumers[$consumer] = array_merge([
             'capability' => 'manage_options', 'screens' => [], 'local_items' => [], 'labels' => [],
@@ -51,12 +52,32 @@ final class AnnouncementManager
      * Stop scheduled work when the final registered consumer is deactivated.
      *
      * @param string $consumer
+     * @param bool $networkWide
      * @return void
      */
-    public static function unregister(string $consumer): void
+    public static function unregister(string $consumer, bool $networkWide = false): void
     {
         unset(self::$consumers[$consumer]);
-        if (!self::$consumers) wp_clear_scheduled_hook(self::CRON_HOOK);
+        if (self::$consumers) return;
+        if (!$networkWide || !is_multisite()) {
+            wp_clear_scheduled_hook(self::CRON_HOOK);
+            return;
+        }
+
+        $offset = 0;
+        do {
+            $sites = get_sites(['network_id' => get_current_network_id(), 'fields' => 'ids', 'number' => 100, 'offset' => $offset]);
+            foreach ($sites as $site) {
+                switch_to_blog((int) $site);
+                try {
+                    wp_clear_scheduled_hook(self::CRON_HOOK);
+                } finally {
+                    restore_current_blog();
+                }
+            }
+
+            $offset += count($sites);
+        } while (count($sites) === 100);
     }
 
     /**
@@ -145,8 +166,14 @@ final class AnnouncementManager
         $dismissals = (array) get_option(self::DISMISSALS, []);
         $visible = [];
         foreach ($items as $item) {
+            // Keep the published service's existing IDs; custom servers have independent identities.
+            if (strpos($item['id'], 'remote:') === 0 && $config['server'] !== 'https://api.webilia.com/announcements') {
+                $item['id'] = 'remote:' . hash('sha256', $config['server']) . ':' . substr($item['id'], 7);
+            }
+
             if ($item['starts'] > time() || ($item['ends'] > 0 && $item['ends'] <= time())) continue;
-            $item['state'] = isset($dismissals[$item['id']]) ? 'dismissed' : 'active';
+            $dismissed = isset($dismissals[$item['id']]) || get_option(self::dismissalKey($item['id']), false) !== false;
+            $item['state'] = $dismissed ? 'dismissed' : 'active';
             $visible[$item['id']] = $item;
         }
 
@@ -204,13 +231,21 @@ final class AnnouncementManager
         $snapshot = self::snapshot($consumer);
         foreach ($snapshot['items'] as $item) {
             if ($item['id'] !== $id) continue;
-            $dismissals = (array) get_option(self::DISMISSALS, []);
-            $dismissals[$id] = time();
-            update_option(self::DISMISSALS, $dismissals, false);
+            // One option per stable ID avoids read-modify-write losses between different dismissals.
+            add_option(self::dismissalKey($id), time(), '', false);
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * @param string $id
+     * @return string
+     */
+    private static function dismissalKey(string $id): string
+    {
+        return self::DISMISSALS . '_' . hash('sha256', $id);
     }
 
     /**
