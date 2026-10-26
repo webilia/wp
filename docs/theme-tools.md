@@ -122,8 +122,11 @@ The old local packages remain independent. No aliases claim `Webilia\SettingsPan
 so existing listeners continue to work; listeners should already select their own option/theme.
 The importer keeps the existing JSON response/status shapes; transports now use isolated actions.
 
-WP adapter JS lives under `$wpPackageUrl/assets/js/`; reusable UI lives under
-`$uiPackageUrl/dist/`. Assets load only on participating screens/Customizer contexts.
+All bundled theme-tool CSS and JavaScript lives in the UI package. Reusable modules load from
+`$uiPackageUrl/dist/{css,js}/`; WordPress-specific browser adapters load from
+`$uiPackageUrl/dist/wordpress/{css,js}/`. WP supplies the PHP enqueueing, native WordPress
+dependencies and localized configuration. Existing `webilia-wp-*` adapter handles stay compatible,
+while the asset cache version follows UI. Assets load only on participating screens/Customizer contexts.
 `custom_style` still loads configured styles/scripts. Map the old admin style dependency to
 `webilia-ui-v1-settings-panel` and the old script dependency to `webilia-wp-settings-panel`.
 The old `webilia-settings-panel-admin` dependency is translated for configured overrides.

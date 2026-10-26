@@ -963,11 +963,12 @@ class Boot extends Base
     {
         if (!$this->is_demo_import_page() || !current_user_can((string) $this->get_config('admin_page.capability', 'manage_options'))) return;
         \Webilia\UI\WordPress\Assets::enqueue(['demo-import'], (string) $this->get_config('ui_url', ''));
-        wp_enqueue_style('webilia-wp-demo-import', rtrim($this->base_url, '/') . '/assets/css/demo-import.css',
-            ['webilia-ui-v1-demo-import'], \Webilia\WP\Version::VALUE);
+        $ui_url = rtrim((string) $this->get_config('ui_url', ''), '/');
+        wp_enqueue_style('webilia-wp-demo-import', $ui_url . '/dist/wordpress/css/demo-import.css',
+            ['webilia-ui-v1-demo-import'], \Webilia\UI\Version::VALUE);
         $handle = 'webilia-wp-demo-import';
-        wp_enqueue_script($handle, rtrim($this->base_url, '/') . '/assets/js/demo-import.js', ['jquery', 'webilia-ui-v1-demo-import'],
-            \Webilia\WP\Version::VALUE, true);
+        wp_enqueue_script($handle, $ui_url . '/dist/wordpress/js/demo-import.js', ['jquery', 'webilia-ui-v1-demo-import'],
+            \Webilia\UI\Version::VALUE, true);
         wp_localize_script($handle, 'webiliaWPImportLabels', $this->js_translations());
         foreach (['styles' => 'wp_enqueue_style', 'scripts' => 'wp_enqueue_script'] as $key => $enqueue)
         {

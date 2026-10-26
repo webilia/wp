@@ -56,21 +56,18 @@ class Boot extends Base
     public function assets()
     {
         if (!$this->enqueue_assets()) return;
-        wp_enqueue_style('webilia-wp-settings-panel', self::$urls['wp'] . '/assets/css/settings-panel.css', ['webilia-ui-v1-settings-panel',
-            'wp-color-picker'], self::VERSION);
+        $ui_version = \Webilia\UI\Version::VALUE;
+        wp_enqueue_style('webilia-wp-settings-panel', self::$urls['ui'] . '/dist/wordpress/css/settings-panel.css',
+            ['webilia-ui-v1-settings-panel', 'wp-color-picker'], $ui_version);
         wp_enqueue_media();
         wp_enqueue_style('wp-color-picker');
         $ui = ['settings-panel', 'toast'];
         $customizer = is_customize_preview() || doing_action('customize_controls_enqueue_scripts');
         if (!$customizer) $ui[] = 'modal';
         \Webilia\UI\WordPress\Assets::enqueue($ui, self::$urls['ui']);
-        wp_enqueue_style('webilia-wp-settings-elusive', self::$urls['ui'] .
-            '/dist/vendor/settings-panel/elusive-icons/css/elusive-icons.min.css', [], '2.0.0');
-        wp_enqueue_style('webilia-wp-settings-fontawesome', self::$urls['ui'] .
-            '/dist/vendor/settings-panel/font-awesome/css/font-awesome.min.css', [], '6.7.2');
         $deps = ['jquery', 'wp-color-picker', 'jquery-ui-sortable', 'webilia-ui-v1-settings-panel', 'webilia-ui-v1-toast'];
         if (!$customizer) $deps[] = 'webilia-ui-v1-modal';
-        wp_enqueue_script('webilia-wp-settings-panel', self::$urls['wp'] . '/assets/js/settings-panel.js', $deps, self::VERSION, true);
+        wp_enqueue_script('webilia-wp-settings-panel', self::$urls['ui'] . '/dist/wordpress/js/settings-panel.js', $deps, $ui_version, true);
         wp_localize_script('webilia-wp-settings-panel', 'webiliaWPSettingsI18n', [
             'closeLabel' => __('Dismiss notification', 'webilia-settings-panel'),
             'dialogCloseLabel' => __('Close dialog', 'webilia-settings-panel'),
@@ -93,10 +90,10 @@ class Boot extends Base
     public static function enqueue_customizer(): void
     {
         \Webilia\UI\WordPress\Assets::enqueue(['settings-customizer'], self::$urls['ui']);
-        wp_enqueue_style('webilia-wp-settings-customizer', self::$urls['wp'] . '/assets/css/settings-customizer.css',
-            ['webilia-ui-v1-settings-customizer'], self::VERSION);
-        wp_enqueue_script('webilia-wp-settings-customizer', self::$urls['wp'] . '/assets/js/settings-customizer.js', ['customize-controls',
-            'jquery', 'webilia-wp-settings-panel'], self::VERSION, true);
+        wp_enqueue_style('webilia-wp-settings-customizer', self::$urls['ui'] . '/dist/wordpress/css/settings-customizer.css',
+            ['webilia-ui-v1-settings-customizer'], \Webilia\UI\Version::VALUE);
+        wp_enqueue_script('webilia-wp-settings-customizer', self::$urls['ui'] . '/dist/wordpress/js/settings-customizer.js', ['customize-controls',
+            'jquery', 'webilia-wp-settings-panel'], \Webilia\UI\Version::VALUE, true);
     }
 
     /**

@@ -63,8 +63,13 @@ $GLOBALS['control_value'] = 'Customizer title';
 ob_start(); $manager->controls['theme_a[title]']->render_content(); $controlHtml = ob_get_clean();
 check(strpos($controlHtml, 'data-customize-setting-link=') !== false && strpos($controlHtml, 'Customizer title') !== false, 'Customizer value/binding preserved.');
 $_GET['page'] = 'theme-b'; $settingsBoot->assets();
-check($GLOBALS['scripts']['webilia-wp-settings-panel']['url'] === 'https://site.test/custom/vendor/wp/assets/js/settings-panel.js', 'Explicit WP root URL.');
+check($GLOBALS['scripts']['webilia-wp-settings-panel']['url'] === 'https://cdn.test/ui/dist/wordpress/js/settings-panel.js', 'WordPress adapter JS is served by the UI package.');
 check($GLOBALS['styles']['webilia-ui-v1-settings-panel']['url'] === 'https://cdn.test/ui/dist/css/settings-panel.css', 'Independent explicit UI root URL.');
+check($GLOBALS['styles']['webilia-wp-settings-panel']['url'] === 'https://cdn.test/ui/dist/wordpress/css/settings-panel.css', 'Settings adapter CSS is served by UI.');
+check($GLOBALS['scripts']['webilia-wp-settings-panel']['version'] === \Webilia\UI\Version::VALUE, 'Moved assets use the UI release cache version.');
+\Webilia\WP\SettingsPanel\Boot::enqueue_customizer();
+check($GLOBALS['scripts']['webilia-wp-settings-customizer']['url'] === 'https://cdn.test/ui/dist/wordpress/js/settings-customizer.js', 'Customizer adapter JS is served by UI.');
+check($GLOBALS['styles']['webilia-wp-settings-customizer']['url'] === 'https://cdn.test/ui/dist/wordpress/css/settings-customizer.css', 'Customizer adapter CSS is served by UI.');
 $GLOBALS['styles'] = []; $GLOBALS['scripts'] = []; $_GET['page'] = 'unrelated'; $settingsBoot->assets();
 check(!$GLOBALS['styles'] && !$GLOBALS['scripts'], 'No assets on unrelated screens.');
 
@@ -137,6 +142,8 @@ check($info->version === '1.2' && $info->title === 'Fixture site', 'Bundled WXR 
 check(!class_exists('AwesomeMotive\\WPContentImporter2\\WXRImporter', false), 'Legacy importer namespace remains unclaimed.');
 $_GET['page'] = 'demos'; $GLOBALS['scripts'] = []; $boot->assets();
 check(isset($GLOBALS['scripts']['webilia-wp-demo-import']) && !isset($GLOBALS['scripts']['webilia-demo-import']), 'Importer asset handles isolated.');
+check($GLOBALS['scripts']['webilia-wp-demo-import']['url'] === 'https://cdn.test/ui/dist/wordpress/js/demo-import.js', 'Demo adapter JS is served by UI.');
+check($GLOBALS['styles']['webilia-wp-demo-import']['url'] === 'https://cdn.test/ui/dist/wordpress/css/demo-import.css', 'Demo adapter CSS is served by UI.');
 ob_start(); $boot->admin_page(); $html = ob_get_clean();
 check(strpos($html, 'webilia_wp_demo_start_import') !== false && strpos($html, 'js-wui-di-page') !== false, 'WP controller renders shared demo view.');
 echo "Theme-tools WordPress checks passed.\n";
