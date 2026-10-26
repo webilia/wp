@@ -147,7 +147,7 @@ class Form extends \Webilia\UI\SettingsPanel\Fields
      * @param string $text
      * @return string
      */
-    protected static function translate(string $text): string { return esc_html__($text, 'webilia-settings-panel'); }
+    protected static function translate(string $text): string { return __($text, 'webilia-settings-panel'); }
     /**
      * @param mixed $html
      * @return string

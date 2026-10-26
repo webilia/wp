@@ -48,7 +48,7 @@ function get_transient($name) { return $GLOBALS['transients'][$name] ?? false; }
 function set_transient($name, $value, $ttl) { $GLOBALS['transients'][$name] = $value; }
 function delete_transient($name) { unset($GLOBALS['transients'][$name]); }
 function current_user_can($capability) { return $GLOBALS['capabilities'][$capability] ?? true; }
-function __($text, $domain = '') { return $text; }
+function __($text, $domain = '') { return $GLOBALS['translations'][$text] ?? $text; }
 function esc_html__($text, $domain = '') { return esc_html($text); }
 function esc_attr__($text, $domain = '') { return esc_attr($text); }
 function esc_html($value) { return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }

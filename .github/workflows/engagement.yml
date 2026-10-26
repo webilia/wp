@@ -19,7 +19,7 @@ jobs:
           cache: npm
       - name: Install companion UI source for contract tests
         env:
-          UI_REF: 3a45f6926b2bca7c2071d9aa01f59f75a464b893
+          UI_REF: 1b812186baeed7393215f12e0783c0e973240387
         run: |
           mkdir -p vendor/webilia/ui
           curl --fail --silent --show-error --location "https://api.github.com/repos/webilia/webilia-ui/tarball/${UI_REF}" | tar -xz --strip-components=1 -C vendor/webilia/ui

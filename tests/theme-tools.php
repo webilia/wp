@@ -153,3 +153,8 @@ $introSettings->set_config(['panel_intro' => '<strong>Formatted intro</strong><s
 ob_start(); $introSettings->render_page(); $introHtml = (string) ob_get_clean();
 check(strpos($introHtml, '<strong>Formatted intro</strong>') !== false && strpos($introHtml, '<script>') === false, 'WP preserves sanitized legacy intro markup through the explicit UI HTML slot.');
 echo "Theme-tools intro contract checks passed.\n";
+
+$GLOBALS['translations']['Regular'] = 'Rock & Roll <b>label</b>';
+$translated = Form::link_color(['name' => 'theme[color]']);
+check(strpos($translated, 'Rock &amp; Roll &lt;b&gt;label&lt;/b&gt;') !== false && strpos($translated, '&amp;amp;') === false, 'WP supplies plain translated labels to UI for one final escape.');
+unset($GLOBALS['translations']);
