@@ -123,14 +123,23 @@ configured settings JSON must be readable and valid; validation errors stop the 
 
 The main AJAX stage checkpoints completed content, widget and settings steps. Repeating a
 completed request returns its saved progress response; recovery after a declared failure skips
-completed steps. An atomic per-user request guard rejects overlapping requests. A
-Customizer request whose preparation was cleaned up or expired returns an error instead of
+completed steps. A per-user MySQL session guard rejects overlapping requests, including stages
+that outlive the five-minute lease. Lease records renew at checkpoints; after a worker disconnects,
+an expired record is recovered with an atomic token/value comparison. This requires connection-affine
+MySQL/MariaDB named locks on the WordPress writer; failure to acquire the guard stops the import.
+Durable, non-autoloaded option checkpoints survive transient expiry and hard termination. Recovery
+never replays a stage marked `in_progress`; a recovered stale/legacy lock with no surviving state
+also records an uncertain stage and stops for inspection. Changing demos does not clear that marker.
+After inspecting/recovering the site, an administrator can explicitly remove both the
+`webilia_wp_demo_import_data_USERID_checkpoint` option and the corresponding
+`webilia_wp_demo_import_data_USERID` transient before starting again. Do not clear active imports.
+A Customizer request whose preparation was cleaned up or expired returns an error instead of
 skipping its data. After a declared Customizer failure, resume the main AJAX step to prepare fresh
 files while retaining completed main-stage checkpoints. Successful Customizer responses are saved
 for replay, and finalization requires all configured stages to have completed. An interrupted
 stage with an uncertain result stops instead of repeating side effects: inspect/recover the
 partial site before clearing its saved import state and starting again. Normal finalization
-clears checkpoints and temporary files. The bundled WXR code is GPL-2.0-or-later; see its LICENSE/NOTICE.
+clears durable/transient checkpoints and temporary files. The bundled WXR code is GPL-2.0-or-later; see its LICENSE/NOTICE.
 
 ## Staged adoption and assets
 

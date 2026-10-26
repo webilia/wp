@@ -286,9 +286,11 @@ response([$expired, 'ajax_import_demo_data']);
 $staged = $expired->state()['files']['customizer'];
 check(is_file($staged), 'Expiry fixture prepares a Customizer download.');
 $savedTransients = $GLOBALS['transients']; $GLOBALS['transients'] = [];
+$checkpointKey = 'webilia_wp_demo_import_data_' . get_current_user_id() . '_checkpoint';
+$savedCheckpoint = get_option($checkpointKey); delete_option($checkpointKey);
 check(response([$expired, 'ajax_import_customizer_data'])->status === 409 && $expired->customizerCalls === 0, 'Expired transient state cannot advance the Customizer stage.');
 check(response([$expired, 'ajax_after_import_data'])->status === 409, 'Expired transient state cannot report import completion.');
-$GLOBALS['transients'] = $savedTransients; $expired->clearState();
+$GLOBALS['transients'] = $savedTransients; update_option($checkpointKey, $savedCheckpoint); $expired->clearState();
 
 
 class ValidationWXR extends \Webilia\WP\DemoImport\Importer\WXRImporter {

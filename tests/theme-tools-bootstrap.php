@@ -43,7 +43,8 @@ function add_filter($hook, $callback, $priority = 10, $args = 1) { add_action($h
 function do_action($hook, ...$args) { foreach ($GLOBALS['hooks'][$hook] ?? [] as $entry) call_user_func_array($entry[0], array_slice($args, 0, $entry[1])); }
 function apply_filters($hook, $value, ...$args) { foreach ($GLOBALS['hooks'][$hook] ?? [] as $entry) $value = call_user_func_array($entry[0], array_slice(array_merge([$value], $args), 0, $entry[1])); return $value; }
 function get_option($name, $default = false) { return apply_filters('option_' . $name, $GLOBALS['options'][$name] ?? $default); }
-function update_option($name, $value) { $old = $GLOBALS['options'][$name] ?? null; $value = apply_filters('sanitize_option_' . $name, $value, $name, $value); $GLOBALS['options'][$name] = $value; do_action('update_option_' . $name, $old, $value); return true; }
+function update_option($name, $value, $autoload = null) { $old = $GLOBALS['options'][$name] ?? null; $value = apply_filters('sanitize_option_' . $name, $value, $name, $value); $GLOBALS['options'][$name] = $value; do_action('update_option_' . $name, $old, $value); return true; }
+function delete_option($name) { unset($GLOBALS['options'][$name]); return true; }
 function get_transient($name) { return $GLOBALS['transients'][$name] ?? false; }
 function set_transient($name, $value, $ttl) { $GLOBALS['transients'][$name] = $value; }
 function delete_transient($name) { unset($GLOBALS['transients'][$name]); }
@@ -116,19 +117,50 @@ function download_url($url, $timeout) {
 // Model the unique option-name index used by the import request guard.
 class ThemeToolsLockDatabase {
     public $options = 'wp_options';
-    private $locks = [];
+    public static $rows = [];
+    public static $sessions = [];
+    private static $nextConnection = 0;
+    public $connection;
+    public $beforeUpdate;
+    public $failNamedLocks = false;
+    public function __construct() { $this->connection = ++self::$nextConnection; }
+    public function disconnect() {
+        foreach (self::$sessions as $key => $lock) if ($lock['owner'] === $this->connection) unset(self::$sessions[$key]);
+        $this->connection = ++self::$nextConnection;
+    }
     public function prepare($sql, ...$args) { return json_encode([$sql, $args]); }
     public function query($query) {
         [$sql, $args] = json_decode($query, true);
-        $key = $args[0];
         if (strpos($sql, 'INSERT IGNORE') === 0) {
-            if (isset($this->locks[$key])) return 0;
-            $this->locks[$key] = $args[1]; return 1;
+            if (isset($args[2]) && (self::$sessions[$args[2]]['owner'] ?? null) !== $this->connection) return 0;
+            if (isset(self::$rows[$args[0]])) return 0;
+            self::$rows[$args[0]] = $args[1]; return 1;
         }
-        if (($this->locks[$key] ?? null) !== $args[1]) return 0;
-        unset($this->locks[$key]); return 1;
+        if (strpos($sql, 'UPDATE') === 0) {
+            if ($this->beforeUpdate) { $callback = $this->beforeUpdate; $this->beforeUpdate = null; $callback(); }
+            if ((self::$rows[$args[1]] ?? null) !== $args[2]) return 0;
+            if (isset($args[3]) && (self::$sessions[$args[3]]['owner'] ?? null) !== $this->connection) return 0;
+            if (self::$rows[$args[1]] === $args[0]) return 0;
+            self::$rows[$args[1]] = $args[0]; return 1;
+        }
+        if ((self::$rows[$args[0]] ?? null) !== $args[1]) return 0;
+        if (isset($args[2]) && (self::$sessions[$args[2]]['owner'] ?? null) !== $this->connection) return 0;
+        unset(self::$rows[$args[0]]); return 1;
     }
-    public function get_var($query) { [, $args] = json_decode($query, true); return $this->locks[$args[0]] ?? null; }
+    public function get_var($query) {
+        [$sql, $args] = json_decode($query, true); $name = $args[0];
+        if (strpos($sql, 'SELECT GET_LOCK') === 0) {
+            if ($this->failNamedLocks) return null;
+            if (isset(self::$sessions[$name]) && self::$sessions[$name]['owner'] !== $this->connection) return 0;
+            self::$sessions[$name] = ['owner' => $this->connection, 'count' => (self::$sessions[$name]['count'] ?? 0) + 1]; return 1;
+        }
+        if (strpos($sql, 'SELECT IS_USED_LOCK') === 0) return (self::$sessions[$name]['owner'] ?? null) === $this->connection ? 1 : 0;
+        if (strpos($sql, 'SELECT RELEASE_LOCK') === 0) {
+            if ((self::$sessions[$name]['owner'] ?? null) !== $this->connection) return 0;
+            if (--self::$sessions[$name]['count'] === 0) unset(self::$sessions[$name]); return 1;
+        }
+        return self::$rows[$name] ?? null;
+    }
 }
 $GLOBALS['wpdb'] = new ThemeToolsLockDatabase();
 function add_query_arg($key, $value, $url) {

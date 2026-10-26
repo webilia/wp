@@ -11,6 +11,13 @@ class Boot extends Base
     private $temporary_files = [];
     /** @var array<string, string>|null */
     private $registered_page = null;
+    /** @var array<string, array<string, string>> */
+    private static $held_import_locks = [];
+    /** @var string|null */
+    private $active_import_lock = null;
+    /** @var boolean */
+    private $recovered_import_lock = false;
+    private const IMPORT_LOCK_TTL = 300;
 
     /**
      * @param mixed $config
@@ -346,10 +353,14 @@ class Boot extends Base
         }
         catch (\Throwable $error)
         {
-            $data = $this->get_import_data();
-            if (isset($data['files'])) $this->cleanup_import_files($data['files']);
-            unset($data['files']);
-            $this->set_import_data($data);
+            if ($this->owns_import_lock($lock, $token))
+            {
+                $data = $this->get_import_data();
+                if (isset($data['files'])) $this->cleanup_import_files($data['files']);
+                unset($data['files']);
+                $this->set_import_data($data);
+            }
+
             $result = new \WP_Error('webilia_wp_demo_interrupted',
                 __('An import stage was interrupted. Check the partial import before restarting.', $this->text_domain()));
         }
@@ -377,6 +388,19 @@ class Boot extends Base
     {
         $signature = hash('sha256', serialize($selected));
         $data = $this->get_import_data();
+        if ($this->recovered_import_lock && !$data)
+        {
+            // A killed worker may have mutated content after its transient expired.
+            $data = ['in_progress' => 'unknown'];
+            $this->set_import_data($data);
+        }
+
+        if (!empty($data['in_progress']))
+        {
+            return new \WP_Error('webilia_wp_demo_interrupted',
+                __('The previous import stage was interrupted. Check the partial import before restarting.', $this->text_domain()));
+        }
+
         if (($data['signature'] ?? '') !== $signature)
         {
             $this->clear_import_data();
@@ -385,12 +409,6 @@ class Boot extends Base
         }
 
         if (isset($data['main_response'])) return $data['main_response'];
-        if (!empty($data['in_progress']))
-        {
-            return new \WP_Error('webilia_wp_demo_interrupted',
-                __('The previous import stage was interrupted. Check the partial import before restarting.', $this->text_domain()));
-        }
-
         $files = $data['files'] ?? $this->prepare_import_files($selected);
         if (is_wp_error($files)) return $files;
         $data['files'] = $files;
@@ -403,11 +421,13 @@ class Boot extends Base
             if ($stage === 'content')
             {
                 $this->before_content_import($selected);
+                $this->refresh_active_import_lock();
                 $result = $this->import_content_file((string) ($files['content'] ?? ''));
             }
             else if ($stage === 'widgets')
             {
                 $this->before_widgets_import($selected);
+                $this->refresh_active_import_lock();
                 $result = $this->import_widgets_file((string) ($files['widgets'] ?? ''));
             }
             else $result = $this->import_wsp_data($files['wsp'] ?? []);
@@ -430,7 +450,7 @@ class Boot extends Base
         return $data['main_response'];
     }
 
-    /** Atomic SQL avoids a read-then-write race between simultaneous AJAX requests.
+    /** A session guard prevents a live worker's expired lease from being stolen.
      * @param string $key
      * @param string $token
      * @return bool
@@ -438,8 +458,48 @@ class Boot extends Base
     private function claim_import_lock(string $key, string $token): bool
     {
         global $wpdb;
-        return $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload)
-            VALUES (%s, %s, 'no')", $key, $token)) === 1;
+        if (isset(self::$held_import_locks[$key])) return false;
+        $name = 'wdi:' . substr(hash('sha256', (defined('DB_NAME') ? DB_NAME : '') . ':' . $wpdb->options . ':' . $key), 0, 60);
+        if ((string) $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, 0)', $name)) !== '1') return false;
+
+        $claimed = false;
+        try
+        {
+            $previous = $wpdb->get_var($wpdb->prepare("SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $key));
+            $old = is_string($previous) ? json_decode($previous, true) : null;
+            if (is_array($old) && ($old['expires'] ?? 0) > $this->import_lock_time()) return false;
+
+            $value = (string) wp_json_encode(['token' => $token, 'expires' => $this->import_lock_time() + self::IMPORT_LOCK_TTL]);
+            if ($previous === null)
+            {
+                $claimed = $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload)
+                    SELECT %s, %s, 'no' WHERE IS_USED_LOCK(%s) = CONNECTION_ID()", $key, $value, $name)) === 1;
+            }
+            else
+            {
+                $claimed = $wpdb->query($wpdb->prepare("UPDATE {$wpdb->options} SET option_value = %s
+                    WHERE option_name = %s AND BINARY option_value = %s AND IS_USED_LOCK(%s) = CONNECTION_ID()",
+                    $value, $key, $previous, $name)) === 1;
+            }
+
+            if (!$claimed) return false;
+            self::$held_import_locks[$key] = ['token' => $token, 'value' => $value, 'name' => $name];
+            $this->active_import_lock = $key;
+            $this->recovered_import_lock = $previous !== null;
+            return true;
+        }
+        finally
+        {
+            if (!$claimed) $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $name));
+        }
+    }
+
+    /**
+     * @return int
+     */
+    protected function import_lock_time(): int
+    {
+        return time();
     }
 
     /** @param string $key
@@ -449,7 +509,30 @@ class Boot extends Base
     private function owns_import_lock(string $key, string $token): bool
     {
         global $wpdb;
-        return $wpdb->get_var($wpdb->prepare("SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $key)) === $token;
+        $held = self::$held_import_locks[$key] ?? null;
+        if ($held === null || $held['token'] !== $token) return false;
+        if ((string) $wpdb->get_var($wpdb->prepare('SELECT IS_USED_LOCK(%s) = CONNECTION_ID()', $held['name'])) !== '1') return false;
+
+        return $wpdb->get_var($wpdb->prepare("SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $key)) === $held['value'];
+    }
+
+    /** Renew at checkpoints; the session guard also covers unbounded work inside a stage.
+     * @return void
+     */
+    private function refresh_active_import_lock(): void
+    {
+        if ($this->active_import_lock === null) return;
+        global $wpdb;
+        $key = $this->active_import_lock;
+        $held = self::$held_import_locks[$key] ?? [];
+        if (!$this->owns_import_lock($key, $held['token'] ?? '')) throw new \RuntimeException('Import lock ownership was lost.');
+        $value = (string) wp_json_encode(['token' => $held['token'], 'expires' => $this->import_lock_time() + self::IMPORT_LOCK_TTL]);
+        if ($value === $held['value']) return;
+        $updated = $wpdb->query($wpdb->prepare("UPDATE {$wpdb->options} SET option_value = %s
+            WHERE option_name = %s AND BINARY option_value = %s AND IS_USED_LOCK(%s) = CONNECTION_ID()",
+            $value, $key, $held['value'], $held['name']));
+        if ($updated !== 1) throw new \RuntimeException('Import lock renewal failed.');
+        self::$held_import_locks[$key]['value'] = $value;
     }
 
     /** @param string $key
@@ -459,7 +542,13 @@ class Boot extends Base
     private function release_import_lock(string $key, string $token): void
     {
         global $wpdb;
-        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value = %s", $key, $token));
+        $held = self::$held_import_locks[$key] ?? null;
+        if ($held === null || $held['token'] !== $token) return;
+        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name = %s AND BINARY option_value = %s
+            AND IS_USED_LOCK(%s) = CONNECTION_ID()", $key, $held['value'], $held['name']));
+        $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $held['name']));
+        unset(self::$held_import_locks[$key]);
+        $this->active_import_lock = null;
     }
 
     /**
@@ -666,6 +755,12 @@ class Boot extends Base
      */
     protected function set_import_data(array $data): void
     {
+        $this->refresh_active_import_lock();
+        // A transient alone can expire during a long stage or after a hard crash.
+        $key = $this->import_data_transient_key() . '_checkpoint';
+        update_option($key, $data, false);
+        if (get_option($key, null) !== $data) throw new \RuntimeException('Could not persist import checkpoint.');
+        $this->refresh_active_import_lock();
         set_transient($this->import_data_transient_key(), $data, HOUR_IN_SECONDS);
     }
 
@@ -677,6 +772,8 @@ class Boot extends Base
      */
     protected function get_import_data(): array
     {
+        $checkpoint = get_option($this->import_data_transient_key() . '_checkpoint', null);
+        if (is_array($checkpoint)) return $checkpoint;
         $data = get_transient($this->import_data_transient_key());
         return is_array($data) ? $data : [];
     }
@@ -692,6 +789,7 @@ class Boot extends Base
         $data = $this->get_import_data();
         if (isset($data['files']) && is_array($data['files'])) $this->cleanup_import_files($data['files']);
         delete_transient($this->import_data_transient_key());
+        delete_option($this->import_data_transient_key() . '_checkpoint');
     }
 
     /**

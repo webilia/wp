@@ -42,7 +42,7 @@
         "phpcbf": [
             "vendor/bin/phpcbf"
         ],
-        "test": "php tests/engagement.php && php tests/legacy-order.php && php tests/theme-tools.php && php tests/theme-tools-review.php && php tests/theme-tools-loading.php legacy-first && php tests/theme-tools-loading.php new-first && php tests/theme-tools-loading.php missing-ui && php tests/theme-tools-loading.php old-ui"
+        "test": "php tests/engagement.php && php tests/legacy-order.php && php tests/theme-tools.php && php tests/theme-tools-review.php && php tests/theme-tools-locks.php && php tests/theme-tools-locks-mysql.php && php tests/theme-tools-loading.php legacy-first && php tests/theme-tools-loading.php new-first && php tests/theme-tools-loading.php missing-ui && php tests/theme-tools-loading.php old-ui"
     },
     "config": {
         "platform": {
