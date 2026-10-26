@@ -632,6 +632,32 @@ class Settings extends Base
     }
 
     /**
+     * Preserve the exact option owner while retaining PHP's nested form parsing.
+     * @param string $raw
+     * @param string $opt_name
+     * @return array<mixed>
+     */
+    private static function decode_submission(string $raw, string $opt_name): array
+    {
+        $pairs = [];
+        $prefix = $opt_name . '[';
+        foreach (explode('&', $raw) as $pair)
+        {
+            $parts = explode('=', $pair, 2);
+            $name = urldecode($parts[0]);
+            if ($name !== $opt_name && strpos($name, $prefix) !== 0) continue;
+
+            // parse_str normalizes top-level dots/spaces. Remap only the matched owner.
+            $name = 'settings' . substr($name, strlen($opt_name));
+            $pairs[] = rawurlencode($name) . '=' . ($parts[1] ?? '');
+        }
+
+        $parsed = [];
+        parse_str(implode('&', $pairs), $parsed);
+        return isset($parsed['settings']) && is_array($parsed['settings']) ? $parsed['settings'] : [];
+    }
+
+    /**
      * @return mixed
      */
     public function ajax_save()
@@ -644,11 +670,7 @@ class Settings extends Base
         if (!$this->is_valid_opt_name($opt_name)) wp_send_json_error(['message' => 'invalid_opt'], 400);
 
         $raw = $_POST['data'] ?? '';
-        $parsed = [];
-        if (is_string($raw) && $raw !== '') parse_str($raw, $parsed);
-
-        $settings = $parsed[$opt_name] ?? [];
-        if (!is_array($settings)) $settings = [];
+        $settings = is_string($raw) ? self::decode_submission($raw, $opt_name) : [];
 
         if (!empty($_POST['import_b64']) && is_string($_POST['import_b64']))
         {

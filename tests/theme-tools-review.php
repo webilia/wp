@@ -101,6 +101,35 @@ check(isset($manager->settings['Theme_Options[TitleCase]'], $manager->settings['
 $_POST['opt_name'] = ['Theme_Options'];
 check(response(static function () { do_action('wp_ajax_webilia_wp_settings_save'); })->status === 400, 'Non-string option keys are rejected.');
 
+$punctuatedNames = ['Theme.Options', 'Theme Options'];
+foreach ($punctuatedNames as $name) {
+    $GLOBALS['options'][$name] = ['Title.Key' => 'Saved', 'Enabled' => 1, 'Unrelated' => 'Keep'];
+    Panel::set_args($name, ['page_slug' => 'punctuated-' . array_search($name, $punctuatedNames, true)]);
+    Panel::set_section($name, ['id' => 'general', 'fields' => [
+        ['id' => 'Title.Key', 'type' => 'text'], ['id' => 'Enabled', 'type' => 'checkbox'],
+        ['id' => 'Choices', 'type' => 'checkboxes'],
+    ]]);
+    Panel::register($name);
+}
+do_action('admin_init');
+$underscoreOwner = get_option('Theme_Options');
+foreach ($punctuatedNames as $name) {
+    $otherName = $name === 'Theme.Options' ? 'Theme Options' : 'Theme.Options';
+    $otherValues = get_option($otherName);
+    $values = ['Title.Key' => 'A+B & C=1 / café', 'Enabled' => '1', 'Choices' => ['first', 'second'], 'Nested' => ['row' => ['Inner.Key' => 'Nested value']]];
+    $raw = http_build_query([$name => $values, 'Theme_Options' => ['Title.Key' => 'Wrong underscore owner'], $otherName => ['Title.Key' => 'Wrong punctuation owner']]);
+    $_POST = ['opt_name' => $name, 'nonce' => 'webilia_wp_settings_actions', 'data' => $raw];
+    check(response(static function () { do_action('wp_ajax_webilia_wp_settings_save'); })->data['success'], 'Punctuated option owners accept AJAX saves.');
+    check(get_option($name) == $values + ['Unrelated' => 'Keep'], 'Exact option/field keys and nested/list values survive URL-encoded form parsing.');
+    check(get_option($otherName) === $otherValues && get_option('Theme_Options') === $underscoreOwner, 'Similarly named option owners cannot intercept or overwrite the selected owner.');
+    $_POST['data'] = http_build_query([$name => ['Title.Key' => 'Unchecked']]);
+    response(static function () { do_action('wp_ajax_webilia_wp_settings_save'); });
+    check(get_option($name)['Enabled'] === 0 && get_option($name)['Choices'] === [], 'Omitted checkboxes clear only for the exact punctuated owner.');
+    $_POST['import_b64'] = base64_encode('{"Title.Key":"Imported"}');
+    response(static function () { do_action('wp_ajax_webilia_wp_settings_save'); });
+    check(get_option($name)['Title.Key'] === 'Imported', 'JSON import keeps the exact punctuated option owner.');
+}
+
 $lower = new ReviewSettings();
 $lower->add_section('general', 'General', null, ['has_content' => true]);
 $lower->add_field('Exact.ID', 'Field', 'general', static function ($args) { echo esc_html($args['sentinel']); }, ['sentinel' => 'Callback argument']);
