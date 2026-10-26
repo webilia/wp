@@ -9,3 +9,5 @@ the original WordPress Importer credits Ryan Boren, Jon Cave, Andrew Nacin and P
 The importer is GPL-2.0-or-later (see LICENSE). It is not covered by the MIT license of the
 surrounding Webilia utilities. This extraction changes its PHP namespace to
 `Webilia\WP\DemoImport\Importer` to avoid legacy autoloader collisions.
+
+The extracted importer also validates complete WXR XML before starting WordPress import mutations.

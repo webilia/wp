@@ -72,7 +72,7 @@ class Settings extends Base
             {
                 add_action('wp_ajax_webilia_wp_settings_' . $action, static function () use ($action)
                 {
-                    $opt = sanitize_key(wp_unslash($_POST['opt_name'] ?? ''));
+                    $opt = self::request_option_name();
                     if (!isset(self::$instances[$opt])) wp_send_json_error(['message' => 'invalid_opt'], 400);
                     self::$instances[$opt]->{'ajax_' . $action}();
                 });
@@ -126,7 +126,7 @@ class Settings extends Base
      */
     public function add_field($id, $title, $section, $callback, array $args = [])
     {
-        $id = sanitize_key($id);
+        $id = is_scalar($id) ? (string) $id : '';
         $section = sanitize_key($section);
         if ($id === '' || $section === '') return $this;
 
@@ -263,7 +263,7 @@ class Settings extends Base
             foreach ($section['fields'] as &$field)
             {
                 ob_start();
-                if (is_callable($field['callback'])) call_user_func($field['callback']);
+                if (is_callable($field['callback'])) call_user_func($field['callback'], $field['args']);
                 $field['html'] = (string) ob_get_clean();
             }
 
@@ -453,7 +453,7 @@ class Settings extends Base
 
         foreach ($this->fields as $field_id => $field)
         {
-            $field_id = sanitize_key((string) $field_id);
+            $field_id = (string) $field_id;
             if ($field_id === '') continue;
 
             $section_key = sanitize_key((string) ($field['section'] ?? ''));
@@ -578,13 +578,22 @@ class Settings extends Base
         ], 'return_output' => true]);
     }
 
+    /** Read an exact registered option key; registry lookup provides validation.
+     * @return string
+     */
+    private static function request_option_name(): string
+    {
+        $value = $_POST['opt_name'] ?? '';
+        return is_string($value) ? wp_unslash($value) : '';
+    }
+
     /**
      * @param string $opt_name
      * @return bool
      */
     protected function is_valid_opt_name(string $opt_name): bool
     {
-        $expected = sanitize_key($this->config['option_name'] ?? '');
+        $expected = (string) ($this->config['option_name'] ?? '');
         if ($expected === '') return false;
 
         return $expected === $opt_name;
@@ -598,7 +607,7 @@ class Settings extends Base
         if (!current_user_can($this->config['capability'])) wp_send_json_error(['message' => 'forbidden'], 403);
         if (!check_ajax_referer('webilia_wp_settings_actions', 'nonce', false)) wp_send_json_error(['message' => 'invalid_nonce'], 400);
 
-        $opt_name = sanitize_key($_POST['opt_name'] ?? '');
+        $opt_name = self::request_option_name();
         if (!$opt_name) wp_send_json_error(['message' => 'missing_opt'], 400);
         if (!$this->is_valid_opt_name($opt_name)) wp_send_json_error(['message' => 'invalid_opt'], 400);
 
@@ -633,7 +642,7 @@ class Settings extends Base
         if (!current_user_can($this->config['capability'])) wp_send_json_error(['message' => 'forbidden'], 403);
         if (!check_ajax_referer('webilia_wp_settings_actions', 'nonce', false)) wp_send_json_error(['message' => 'invalid_nonce'], 400);
 
-        $opt_name = sanitize_key($_POST['opt_name'] ?? '');
+        $opt_name = self::request_option_name();
         $section = sanitize_key($_POST['section'] ?? '');
         if (!$opt_name || !$section) wp_send_json_error(['message' => 'missing_section'], 400);
         if (!$this->is_valid_opt_name($opt_name)) wp_send_json_error(['message' => 'invalid_opt'], 400);
@@ -674,7 +683,7 @@ class Settings extends Base
         if (!current_user_can($this->config['capability'])) wp_send_json_error(['message' => 'forbidden'], 403);
         if (!check_ajax_referer('webilia_wp_settings_actions', 'nonce', false)) wp_send_json_error(['message' => 'invalid_nonce'], 400);
 
-        $opt_name = sanitize_key($_POST['opt_name'] ?? '');
+        $opt_name = self::request_option_name();
         if (!$opt_name) wp_send_json_error(['message' => 'missing_opt'], 400);
         if (!$this->is_valid_opt_name($opt_name)) wp_send_json_error(['message' => 'invalid_opt'], 400);
 
@@ -818,7 +827,7 @@ class Settings extends Base
         $wp_admin_bar->add_node([
             'id' => 'wui-sp-settings-' . $slug,
             'title' => $title,
-            'href' => admin_url('admin.php?page=' . $slug),
+            'href' => $this->current_page_url(),
         ]);
     }
 
@@ -844,10 +853,17 @@ class Settings extends Base
      */
     protected function current_page_url(): string
     {
-        $slug = sanitize_key((string) ($this->config['menu_slug'] ?? ''));
+        $slug = (string) ($this->config['menu_slug'] ?? '');
         if ($slug === '') return admin_url();
 
-        return admin_url('admin.php?page=' . $slug);
+        $registered = function_exists('menu_page_url') ? menu_page_url($slug, false) : '';
+        if ($registered !== '') return $registered;
+        $parent = (string) ($this->config['parent_slug'] ?? '');
+        if (($this->config['menu_type'] ?? '') === 'menu' || empty($this->config['allow_sub_menu'])) $parent = '';
+        $parent = $parent !== '' ? $parent : 'admin.php';
+        // Plugin-defined parent slugs are routed through admin.php by WordPress.
+        if (strpos($parent, '.php') === false) $parent = 'admin.php';
+        return add_query_arg('page', $slug, admin_url($parent));
     }
 
     /**

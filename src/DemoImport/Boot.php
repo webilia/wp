@@ -9,6 +9,8 @@ class Boot extends Base
     protected string $base_url;
     /** @var array<mixed> */
     private $temporary_files = [];
+    /** @var array<string, string>|null */
+    private $registered_page = null;
 
     /**
      * @param mixed $config
@@ -172,9 +174,9 @@ class Boot extends Base
      * Add the configured submenu page for the demo importer.
      */
     /**
-     * @return void
+     * @return array<mixed>
      */
-    public function add_admin_page(): void
+    protected function resolved_page_setup(): array
     {
         $default_page_title = $this->config_string($this->get_config('page_setup.page_title', $this->default_demo_import_label()),
             $this->default_demo_import_label());
@@ -185,7 +187,17 @@ class Boot extends Base
             'menu_title' => $this->config_string($this->get_config('admin_page.menu_title', $default_page_title), $default_page_title),
         ];
         $page_setup = $this->apply_wdi_filters('page_setup', $page_setup, $this->get_config());
-        if (!is_array($page_setup)) return;
+        return is_array($page_setup) ? $page_setup : [];
+
+    }
+
+    /**
+     * @return void
+     */
+    public function add_admin_page(): void
+    {
+        $page_setup = $this->resolved_page_setup();
+        if (!$page_setup) return;
 
         $parent_slug = isset($page_setup['parent_slug']) ? (string) $page_setup['parent_slug'] : '';
         $menu_slug = isset($page_setup['menu_slug']) ? (string) $page_setup['menu_slug'] : '';
@@ -195,6 +207,7 @@ class Boot extends Base
         $position = $this->get_config('admin_page.position', null);
 
         if ($parent_slug === '' || $menu_slug === '') return;
+        $this->registered_page = ['parent' => $parent_slug, 'slug' => $menu_slug];
 
         if ($position === null || $position === '')
         {
@@ -310,48 +323,143 @@ class Boot extends Base
             wp_send_json(['error' => esc_html__('Selected demo is invalid.', $this->text_domain())], 400);
         }
 
-        $files = $this->prepare_import_files($selected);
-        if (is_wp_error($files))
+        $lock = 'webilia_wp_demo_import_lock_' . get_current_user_id();
+        $token = bin2hex(random_bytes(16));
+        if (!$this->claim_import_lock($lock, $token))
         {
-            wp_send_json(['error' => $files->get_error_message()], 500);
+            wp_send_json(['error' => __('An import request is already running.', $this->text_domain())], 409);
         }
 
-        $this->set_import_data([
-            'selected' => $selected,
-            'demos' => $demos,
-            'files' => $files,
-        ]);
+        // Fatal errors/time limits still release the request lock and owned downloads.
+        register_shutdown_function(function () use ($lock, $token)
+        {
+            if (!$this->owns_import_lock($lock, $token)) return;
+            $data = $this->get_import_data();
+            if (isset($data['files'])) $this->cleanup_import_files($data['files']);
+            unset($data['files']);
+            $this->set_import_data($data);
+            $this->release_import_lock($lock, $token);
+        });
+        try
+        {
+            $result = $this->run_ajax_main_import($selected, $demos);
+        }
+        catch (\Throwable $error)
+        {
+            $data = $this->get_import_data();
+            if (isset($data['files'])) $this->cleanup_import_files($data['files']);
+            unset($data['files']);
+            $this->set_import_data($data);
+            $result = new \WP_Error('webilia_wp_demo_interrupted',
+                __('An import stage was interrupted. Check the partial import before restarting.', $this->text_domain()));
+        }
+        finally
+        {
+            $this->release_import_lock($lock, $token);
+        }
 
-        $this->before_content_import($selected);
+        if (is_wp_error($result))
+        {
+            $status = $result->get_error_code() === 'webilia_wp_demo_interrupted' ? 409 : 500;
+            wp_send_json(['error' => $result->get_error_message()], $status);
+        }
 
-        $content_result = $this->import_content_file((string) ($files['content'] ?? ''));
-        if (is_wp_error($content_result))
+        wp_send_json($result);
+    }
+
+    /**
+     * Persist stage checkpoints before non-idempotent callbacks/imports.
+     * @param array<mixed> $selected
+     * @param array<mixed> $demos
+     * @return mixed
+     */
+    protected function run_ajax_main_import(array $selected, array $demos)
+    {
+        $signature = hash('sha256', serialize($selected));
+        $data = $this->get_import_data();
+        if (($data['signature'] ?? '') !== $signature)
         {
             $this->clear_import_data();
-            wp_send_json(['error' => $content_result->get_error_message()], 500);
+            $data = ['signature' => $signature, 'selected' => $selected, 'demos' => $demos, 'steps' => []];
+            $this->set_import_data($data);
         }
 
-        $this->before_widgets_import($selected);
-        $widgets_result = $this->import_widgets_file((string) ($files['widgets'] ?? ''));
-        if (is_wp_error($widgets_result))
+        if (isset($data['main_response'])) return $data['main_response'];
+        if (!empty($data['in_progress']))
         {
-            $this->clear_import_data();
-            wp_send_json(['error' => $widgets_result->get_error_message()], 500);
+            return new \WP_Error('webilia_wp_demo_interrupted',
+                __('The previous import stage was interrupted. Check the partial import before restarting.', $this->text_domain()));
         }
 
-        $wsp_result = $this->import_wsp_data($files['wsp'] ?? []);
-        if (is_wp_error($wsp_result))
+        $files = $data['files'] ?? $this->prepare_import_files($selected);
+        if (is_wp_error($files)) return $files;
+        $data['files'] = $files;
+        $this->set_import_data($data);
+        foreach (['content', 'widgets', 'settings'] as $stage)
         {
-            $this->clear_import_data();
-            wp_send_json(['error' => $wsp_result->get_error_message()], 500);
+            if (!empty($data['steps'][$stage])) continue;
+            $data['in_progress'] = $stage;
+            $this->set_import_data($data);
+            if ($stage === 'content')
+            {
+                $this->before_content_import($selected);
+                $result = $this->import_content_file((string) ($files['content'] ?? ''));
+            }
+            else if ($stage === 'widgets')
+            {
+                $this->before_widgets_import($selected);
+                $result = $this->import_widgets_file((string) ($files['widgets'] ?? ''));
+            }
+            else $result = $this->import_wsp_data($files['wsp'] ?? []);
+            unset($data['in_progress']);
+            if (is_wp_error($result))
+            {
+                $this->cleanup_import_files($files);
+                unset($data['files']);
+                if (empty($data['steps'])) $this->clear_import_data();
+                else $this->set_import_data($data);
+                return $result;
+            }
+
+            $data['steps'][$stage] = true;
+            $this->set_import_data($data);
         }
 
-        if (!empty($files['customizer']))
-        {
-            wp_send_json(['status' => 'customizerAJAX']);
-        }
+        $data['main_response'] = ['status' => !empty($files['customizer']) ? 'customizerAJAX' : 'afterAllImportAJAX'];
+        $this->set_import_data($data);
+        return $data['main_response'];
+    }
 
-        wp_send_json(['status' => 'afterAllImportAJAX']);
+    /** Atomic SQL avoids a read-then-write race between simultaneous AJAX requests.
+     * @param string $key
+     * @param string $token
+     * @return bool
+     */
+    private function claim_import_lock(string $key, string $token): bool
+    {
+        global $wpdb;
+        return $wpdb->query($wpdb->prepare("INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload)
+            VALUES (%s, %s, 'no')", $key, $token)) === 1;
+    }
+
+    /** @param string $key
+     * @param string $token
+     * @return bool
+     */
+    private function owns_import_lock(string $key, string $token): bool
+    {
+        global $wpdb;
+        return $wpdb->get_var($wpdb->prepare("SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $key)) === $token;
+    }
+
+    /** @param string $key
+     * @param string $token
+     * @return void
+     */
+    private function release_import_lock(string $key, string $token): void
+    {
+        global $wpdb;
+        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value = %s", $key, $token));
     }
 
     /**
@@ -371,7 +479,9 @@ class Boot extends Base
             $result = $this->import_customizer_file($customizer_file);
             if (is_wp_error($result))
             {
-                $this->clear_import_data();
+                $this->cleanup_import_files($data['files'] ?? []);
+                unset($data['files'], $data['main_response']);
+                $this->set_import_data($data);
                 wp_send_json(['error' => $result->get_error_message()], 500);
             }
         }
@@ -882,22 +992,30 @@ class Boot extends Base
     {
         if (!$wsp_items) return null;
 
+        $prepared = [];
         foreach ($wsp_items as $item)
         {
-            if (!is_array($item)) continue;
-
-            $option_name = isset($item['option_name']) ? (string) $item['option_name'] : '';
-            $file_path = isset($item['file_path']) ? (string) $item['file_path'] : '';
-            if ($option_name === '' || $file_path === '' || !file_exists($file_path)) continue;
+            $option_name = is_array($item) && isset($item['option_name']) ? (string) $item['option_name'] : '';
+            $file_path = is_array($item) && isset($item['file_path']) ? (string) $item['file_path'] : '';
+            if ($option_name === '' || $file_path === '' || !is_file($file_path) || !is_readable($file_path))
+            {
+                return new \WP_Error('webilia_wp_demo_settings_missing',
+                    __('Settings import file was not found or is unreadable.', $this->text_domain()));
+            }
 
             $raw = file_get_contents($file_path);
-            if (!is_string($raw) || trim($raw) === '') continue;
+            $options = is_string($raw) && trim($raw) !== '' ? json_decode($raw, true) : null;
+            if (!is_array($options) || json_last_error() !== JSON_ERROR_NONE)
+            {
+                return new \WP_Error('webilia_wp_demo_settings_invalid',
+                    __('Settings import file must contain valid JSON options.', $this->text_domain()));
+            }
 
-            $options = json_decode($raw, true);
-            if (!is_array($options)) continue;
-
-            update_option($option_name, $options);
+            $prepared[] = ['name' => $option_name, 'options' => $options];
         }
+
+        // Validate all configured sets before updating any option.
+        foreach ($prepared as $item) update_option($item['name'], $item['options']);
 
         return null;
     }
@@ -1049,10 +1167,20 @@ class Boot extends Base
      */
     protected function current_page_url(): string
     {
-        $slug = sanitize_key((string) $this->get_config('page_setup.menu_slug', ''));
-        if ($slug === '') return admin_url();
+        $page = $this->registered_page;
+        if ($page === null)
+        {
+            $setup = $this->resolved_page_setup();
+            $page = ['slug' => (string) ($setup['menu_slug'] ?? ''), 'parent' => (string) ($setup['parent_slug'] ?? '')];
+        }
 
-        return admin_url('admin.php?page=' . $slug);
+        $slug = $page['slug'];
+        if ($slug === '') return admin_url();
+        $registered = function_exists('menu_page_url') ? menu_page_url($slug, false) : '';
+        if ($registered !== '') return $registered;
+        $parent = $page['parent'];
+        if ($parent === '' || strpos($parent, '.php') === false) $parent = 'admin.php';
+        return add_query_arg('page', $slug, admin_url($parent));
     }
 
     /**
@@ -1375,7 +1503,7 @@ class Boot extends Base
         }
         else
         {
-            $plugins = $this->plugin();
+            $plugins = isset($demo['plugins']) && is_array($demo['plugins']) ? $demo['plugins'] : $this->plugin();
         }
 
         $plugins = $this->apply_wdi_filters('plugins_for_demo', $plugins, $demo, $index, $demos, $this->get_config());

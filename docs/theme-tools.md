@@ -47,7 +47,7 @@ Panel::set_section('example_theme_settings', [
 Panel::register('example_theme_settings');
 ```
 
-Keep the original option name and field IDs when adopting the new namespace. No data migration
+Keep the original option name and field IDs, including case and punctuation, when adopting the new namespace. No data migration
 is necessary. Existing argument/section/field arrays, nested values, defaults, subsection/tab
 structure, conditionals, reset behavior, JSON import/export, typography, media/gallery, editor,
 color controls, repeater/slides/social fields, sortable controls, and query-backed options remain
@@ -103,15 +103,25 @@ widget and Customizer file keys (`local_import_file`, `local_import_widget_file`
 `local_import_customizer_file`), remote demo files, `import_wsp` and legacy `import_redux` JSON,
 preview/categories, required/preselected plugins, branding, intro/title configuration, and
 `plugins`, `plugins_for_demo`, `start_import`, and lifecycle callbacks. Deprecated `import_files`
-and `register_plugins` callback aliases still work. Public `wdi/*` hooks and callback argument
-order remain unchanged. Product-specific imports and theme setup stay in the supplied callbacks.
+and `register_plugins` callback aliases still work. They are callback aliases; the retained global
+filter names are `wdi/demos` and `wdi/plugins`. Public `wdi/*` hooks and callback argument
+order remain unchanged. Plugin resolution uses `plugins_for_demo` when configured, otherwise
+the demo's inline `plugins` list, otherwise the global plugin list. Product-specific imports and theme setup stay in the supplied callbacks.
 
 WXR imports fetch attachments and keep the current user as the default author. Widget JSON keeps
 sidebar assignments; unknown sidebars use inactive widgets. Customizer files remain serialized
 arrays of `template`, `mods`, and optional `options`, with object deserialization disabled and an
 active-theme match required. Plugin installation/activation retains its extra WordPress
 capability checks. Downloaded files are removed after completion/failure; configured local
-source files are not deleted. The bundled WXR code is GPL-2.0-or-later; see its LICENSE/NOTICE.
+source files are not deleted. The full WXR document is validated before import mutations, and
+configured settings JSON must be readable and valid; validation errors stop the flow.
+
+The main AJAX stage checkpoints completed content, widget and settings steps. Repeating a
+completed request returns its saved progress response; recovery after a declared failure skips
+completed steps. An atomic per-user request guard rejects overlapping requests. An interrupted
+stage with an uncertain result stops instead of repeating side effects: inspect/recover the
+partial site before clearing its saved import state and starting again. Normal finalization
+clears checkpoints and temporary files. The bundled WXR code is GPL-2.0-or-later; see its LICENSE/NOTICE.
 
 ## Staged adoption and assets
 

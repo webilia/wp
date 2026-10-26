@@ -138,6 +138,41 @@ class WXRImporter extends \WP_Importer {
 		return $reader;
 	}
 
+	/** Validate the complete document before any content or global WP state changes. */
+	protected function validate_import_file( $file ) {
+		if ( ! is_file( $file ) ) {
+			return new WP_Error( 'wxr_importer.file_missing', __( 'The file does not exist, please try again.', 'wordpress-importer' ) );
+		}
+		$previous = libxml_use_internal_errors( true );
+		libxml_clear_errors();
+		$reader = new XMLReader();
+		try {
+			if ( ! $reader->open( $file, null, LIBXML_NONET ) ) {
+				return new WP_Error( 'wxr_importer.cannot_parse', __( 'Could not open the file for parsing', 'wordpress-importer' ) );
+			}
+			$rss = false;
+			$version = false;
+			while ( $reader->read() ) {
+				if ( $reader->nodeType !== XMLReader::ELEMENT ) continue;
+				if ( $reader->depth === 0 && $reader->name === 'rss' ) $rss = true;
+				if ( $reader->name === 'wp:wxr_version' ) $version = true;
+			}
+			foreach ( libxml_get_errors() as $error ) {
+				if ( $error->level >= LIBXML_ERR_ERROR ) {
+					return new WP_Error( 'wxr_importer.invalid_xml', __( 'The WXR document contains malformed XML.', 'wordpress-importer' ) );
+				}
+			}
+			if ( ! $rss || ! $version ) {
+				return new WP_Error( 'wxr_importer.invalid_wxr', __( 'The file is not a WordPress WXR export.', 'wordpress-importer' ) );
+			}
+			return null;
+		} finally {
+			$reader->close();
+			libxml_clear_errors();
+			libxml_use_internal_errors( $previous );
+		}
+	}
+
 	/**
 	 * The main controller for the actual import stage.
 	 *
@@ -327,6 +362,11 @@ class WXRImporter extends \WP_Importer {
 	 * @param string $file Path to the WXR file for importing.
 	 */
 	public function import( $file ) {
+		$validation = $this->validate_import_file( $file );
+		if ( is_wp_error( $validation ) ) {
+			return $validation;
+		}
+
 		add_filter( 'import_post_meta_key', array( $this, 'is_valid_meta_key' ) );
 		add_filter( 'http_request_timeout', array( &$this, 'bump_request_timeout' ) );
 

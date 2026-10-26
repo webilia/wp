@@ -111,3 +111,31 @@ function download_url($url, $timeout) {
     $GLOBALS['downloaded'][] = $path;
     return $path;
 }
+
+// Model the unique option-name index used by the import request guard.
+class ThemeToolsLockDatabase {
+    public $options = 'wp_options';
+    private $locks = [];
+    public function prepare($sql, ...$args) { return json_encode([$sql, $args]); }
+    public function query($query) {
+        [$sql, $args] = json_decode($query, true);
+        $key = $args[0];
+        if (strpos($sql, 'INSERT IGNORE') === 0) {
+            if (isset($this->locks[$key])) return 0;
+            $this->locks[$key] = $args[1]; return 1;
+        }
+        if (($this->locks[$key] ?? null) !== $args[1]) return 0;
+        unset($this->locks[$key]); return 1;
+    }
+    public function get_var($query) { [, $args] = json_decode($query, true); return $this->locks[$args[0]] ?? null; }
+}
+$GLOBALS['wpdb'] = new ThemeToolsLockDatabase();
+function add_query_arg($key, $value, $url) {
+    $parts = parse_url($url); $query = []; parse_str($parts['query'] ?? '', $query); $query[$key] = $value;
+    return ($parts['scheme'] ?? 'https') . '://' . $parts['host'] . ($parts['path'] ?? '') . '?' . http_build_query($query);
+}
+function is_admin_bar_showing() { return true; }
+function add_submenu_page($parent, $title, $label, $capability, $slug, $callback, $position = null) { $GLOBALS['menus'][$slug] = $parent; }
+function add_menu_page($title, $label, $capability, $slug, $callback, $icon = '', $position = null) { $GLOBALS['menus'][$slug] = ''; }
+
+function menu_page_url($slug, $echo = true) { return $GLOBALS['menu_urls'][$slug] ?? ''; }

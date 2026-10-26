@@ -107,7 +107,7 @@ class Form extends \Webilia\UI\SettingsPanel\Fields
         $args = static::normalize_args($args);
         if (!count($args)) return false;
 
-        $value = (isset($args['value']) ? stripslashes($args['value']) : '');
+        $value = isset($args['value']) ? $args['value'] : '';
         $id = (isset($args['id']) ? esc_attr($args['id']) : '');
 
         $name = (isset($args['name']) ? esc_attr($args['name']) : '');

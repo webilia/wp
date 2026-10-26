@@ -170,7 +170,7 @@ class Panel
                 if (!isset($field['id']) || !trim($field['id'])) continue;
                 $field_type = strtolower(trim((string) ($field['type'] ?? '')));
 
-                $field_id = sanitize_key($field['id']);
+                $field_id = (string) $field['id'];
                 $type = $field['type'] ?? '';
                 $title = ($type === 'info' || $type === 'divide' || $type === 'raw' || $type === 'content') ? '' : ($field['title'] ?? '');
                 if ($field_type === 'section')
@@ -663,14 +663,13 @@ class Panel
             $type = strtolower(trim((string) ($field['type'] ?? 'text')));
             if ($type === 'section') continue;
 
-            $field_id = sanitize_key($field['id']);
-            if ($field_id === '') continue;
+            $field_id = (string) $field['id'];
 
             $type = $field['type'] ?? 'text';
             self::$field_index[$opt_name][$field_id] = $type;
 
             $color_origin = '';
-            if (isset($field['color_origin']) && is_string($field['color_origin'])) $color_origin = sanitize_key($field['color_origin']);
+            if (isset($field['color_origin']) && is_string($field['color_origin'])) $color_origin = (string) $field['color_origin'];
 
             self::$field_meta[$opt_name][$field_id] = [
                 'type' => $type,
@@ -689,7 +688,7 @@ class Panel
      */
     public static function get_field_type(string $opt_name, string $field_id): string
     {
-        $field_id = sanitize_key($field_id);
+        $field_id = (string) $field_id;
         if (!$field_id) return '';
 
         return self::$field_index[$opt_name][$field_id] ?? '';
@@ -702,7 +701,7 @@ class Panel
      */
     public static function get_field_meta(string $opt_name, string $field_id): array
     {
-        $field_id = sanitize_key($field_id);
+        $field_id = (string) $field_id;
         if (!$field_id) return [];
 
         return self::$field_meta[$opt_name][$field_id] ?? [];
@@ -895,13 +894,13 @@ class Panel
     protected static function render_field(array $field, string $opt_name): string
     {
         $type = $field['type'] ?? 'text';
-        $field_id = isset($field['id']) ? trim((string) $field['id']) : '';
+        $field_id = isset($field['id']) ? (string) $field['id'] : '';
         $method = self::map_type($type);
         $value = self::field_value($field, $opt_name);
         $color_origin = '';
         if (isset($field['color_origin']) && is_string($field['color_origin']))
         {
-            $color_origin = sanitize_key($field['color_origin']);
+            $color_origin = (string) $field['color_origin'];
         }
 
         $args = [
