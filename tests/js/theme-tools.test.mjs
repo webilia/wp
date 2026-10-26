@@ -47,3 +47,34 @@ test('WP settings adapter initializes once and serializes the selected option ow
     assert.equal(w.document.querySelector('[name="legacy[title]"]').value,'Legacy');
     dom.window.close();
 });
+
+
+test('native WP media picker supplies single and multiple selections to shared controls without duplicate dialogs', async () => {
+    const dom = new JSDOM('<div class="wui-sp-media"><input class="wui-sp-media-url"><input class="wui-sp-media-id"><div class="wui-sp-media-input"><button class="wui-sp-media-select">Select</button></div></div><div class="wui-sp-gallery"><ul class="wui-sp-gallery-items"></ul><input class="wui-sp-gallery-input"><p class="wui-sp-gallery-empty">Empty</p><button class="wui-sp-gallery-select">Add</button></div>', {runScripts:'outside-only',url:'https://site.test/'});
+    const w = dom.window;
+    w.matchMedia = () => ({matches:false});
+    w.requestAnimationFrame = callback => callback();
+    const $ = jquery(w); w.jQuery = $;
+    const picks = [];
+    w.wp = { media(config) {
+        picks.push(config);
+        const data = config.multiple ? [{id:2,url:'https://files.test/two.png'},{id:3,url:'https://files.test/three.png'}] : [{id:1,type:'image',url:'https://files.test/one.png'}];
+        let selected;
+        return { on(event, callback) { selected=callback; }, open() { selected(); }, state() { return {get() { return {toJSON:()=>data,first:()=>({toJSON:()=>data[0]})}; }}; } };
+    }};
+    w.webiliaWPSettingsI18n = {};
+    w.eval(await readFile(resolve(ui,'dist/js/settings-panel.js'),'utf8'));
+    w.eval(await readFile(resolve(root,'assets/js/settings-panel.js'),'utf8'));
+    w.document.querySelector('.wui-sp-media-select').click();
+    assert.equal(picks.length,1);
+    assert.equal(w.document.querySelector('.wui-sp-media-id').value,'1');
+    w.document.querySelector('.wui-sp-gallery-select').click();
+    assert.equal(picks.length,2);
+    assert.equal(picks[1].multiple,true);
+    assert.equal(w.document.querySelector('.wui-sp-gallery-input').value,'2,3');
+    w.document.querySelector('.wui-sp-gallery-select').click();
+    assert.equal(picks.length,3);
+    assert.equal(w.document.querySelector('.wui-sp-gallery-items').children.length,2);
+    await new Promise(resolve => setTimeout(resolve,0));
+    w.close();
+});

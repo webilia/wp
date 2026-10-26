@@ -288,6 +288,7 @@ class Settings extends Base
             'panel_attrs' => $attrs, 'hidden_html' => $hidden,
             'post_url' => admin_url('options.php'),
             'header_html' => $this->page_header_html(),
+            'panel_intro_html' => wp_kses_post($this->config['panel_intro']),
             'actions_top_html' => $this->render_actions(),
             'actions_bottom_html' => $this->render_actions(true),
             'panel_title' => $this->config['panel_title'],

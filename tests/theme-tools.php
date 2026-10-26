@@ -140,3 +140,9 @@ check(isset($GLOBALS['scripts']['webilia-wp-demo-import']) && !isset($GLOBALS['s
 ob_start(); $boot->admin_page(); $html = ob_get_clean();
 check(strpos($html, 'webilia_wp_demo_start_import') !== false && strpos($html, 'js-wui-di-page') !== false, 'WP controller renders shared demo view.');
 echo "Theme-tools WordPress checks passed.\n";
+
+$introSettings = new \Webilia\WP\SettingsPanel\Settings();
+$introSettings->set_config(['panel_intro' => '<strong>Formatted intro</strong><script>unsafe()</script>']);
+ob_start(); $introSettings->render_page(); $introHtml = (string) ob_get_clean();
+check(strpos($introHtml, '<strong>Formatted intro</strong>') !== false && strpos($introHtml, '<script>') === false, 'WP preserves sanitized legacy intro markup through the explicit UI HTML slot.');
+echo "Theme-tools intro contract checks passed.\n";
