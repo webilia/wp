@@ -43,7 +43,7 @@ function add_filter($hook, $callback, $priority = 10, $args = 1) { add_action($h
 function do_action($hook, ...$args) { foreach ($GLOBALS['hooks'][$hook] ?? [] as $entry) call_user_func_array($entry[0], array_slice($args, 0, $entry[1])); }
 function apply_filters($hook, $value, ...$args) { foreach ($GLOBALS['hooks'][$hook] ?? [] as $entry) $value = call_user_func_array($entry[0], array_slice(array_merge([$value], $args), 0, $entry[1])); return $value; }
 function get_option($name, $default = false) { return apply_filters('option_' . $name, $GLOBALS['options'][$name] ?? $default); }
-function update_option($name, $value) { $old = $GLOBALS['options'][$name] ?? null; $GLOBALS['options'][$name] = $value; do_action('update_option_' . $name, $old, $value); return true; }
+function update_option($name, $value) { $old = $GLOBALS['options'][$name] ?? null; $value = apply_filters('sanitize_option_' . $name, $value, $name, $value); $GLOBALS['options'][$name] = $value; do_action('update_option_' . $name, $old, $value); return true; }
 function get_transient($name) { return $GLOBALS['transients'][$name] ?? false; }
 function set_transient($name, $value, $ttl) { $GLOBALS['transients'][$name] = $value; }
 function delete_transient($name) { unset($GLOBALS['transients'][$name]); }
@@ -93,13 +93,14 @@ function wp_localize_script($handle, $name, $value) { $GLOBALS['localized'][$nam
 function settings_fields($slug) { echo '<input name="option_page" value="' . esc_attr($slug) . '">'; }
 function wp_nonce_field($action, $name = '_wpnonce', $referer = true, $echo = true) { $html = '<input name="' . $name . '" value="' . $action . '">'; if ($echo) echo $html; return $html; }
 function get_pages() { return [(object) ['ID' => 2, 'post_title' => 'About']]; }
+function get_posts($args) { $GLOBALS['post_queries'][] = $args; return [(object) ['ID' => 8, 'post_title' => $args['post_type'] . ' record']]; }
 function wp_get_attachment_url($id) { return 'https://site.test/uploads/' . $id . '.png'; }
 function wp_get_attachment_image_url($id, $size) { return wp_get_attachment_url($id); }
 function wp_editor($value, $id, $args) { echo '<textarea data-wp-editor="' . $id . '" name="' . $args['textarea_name'] . '">' . esc_html($value) . '</textarea>'; }
 function is_plugin_active($file) { return !empty($GLOBALS['active_plugins'][$file]); }
 function get_plugins() { return $GLOBALS['plugins'] ?? ['example/example.php' => ['Name' => 'Example']]; }
 function activate_plugin($file) { $GLOBALS['active_plugins'][$file] = true; return null; }
-function register_setting($group, $name, $callback) { $GLOBALS['registered_settings'][$name] = $callback; }
+function register_setting($group, $name, $callback) { $GLOBALS['registered_settings'][$name] = $callback; add_filter('sanitize_option_' . $name, $callback); }
 function add_settings_section($id, $title, $callback, $page) {}
 function add_settings_field($id, $title, $callback, $page, $section, $args) {}
 function __return_false() { return false; }

@@ -783,7 +783,13 @@ class Boot extends Base
         if ($local_key !== '')
         {
             $local = isset($demo[$local_key]) ? (string) $demo[$local_key] : '';
-            if ($local !== '' && file_exists($local)) return $local;
+            if ($local !== '')
+            {
+                if (is_file($local) && is_readable($local)) return $local;
+
+                return new \WP_Error('webilia_wp_demo_invalid_local_file', esc_html__('A configured local import file is missing or unreadable.',
+                    $this->text_domain()));
+            }
         }
 
         return '';
@@ -1150,13 +1156,13 @@ class Boot extends Base
     {
         if (!is_admin()) return false;
 
-        $menu_slug = (string) $this->get_config('page_setup.menu_slug', '');
+        $menu_slug = (string) ($this->registered_page['slug'] ?? $this->resolved_page_setup()['menu_slug'] ?? '');
         if ($menu_slug === '') return false;
 
-        $page = isset($_GET['page']) ? sanitize_key((string) $_GET['page']) : '';
+        $page = isset($_GET['page']) && is_string($_GET['page']) ? wp_unslash($_GET['page']) : '';
         if ($page === '') return false;
 
-        return $page === sanitize_key($menu_slug);
+        return $page === $menu_slug;
     }
 
     /**

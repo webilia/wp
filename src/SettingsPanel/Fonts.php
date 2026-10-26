@@ -96,7 +96,6 @@ class Fonts
      */
     public static function enqueue_selected(string $opt_name, array $args = []): void
     {
-        $opt_name = sanitize_key($opt_name);
         if ($opt_name === '') return;
 
         $disable_google = apply_filters('webilia_settings_panel_disable_google_fonts', false);

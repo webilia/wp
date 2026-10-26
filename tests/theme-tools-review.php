@@ -22,6 +22,25 @@ class ReviewImport extends \Webilia\WP\DemoImport\Boot {
     protected function import_widgets_file(string $path) { $this->widgetCalls++; return parent::import_widgets_file($path); }
 }
 $config = ['base_url' => 'https://site.test/wp', 'ui_url' => 'https://site.test/ui'];
+$settingsBoot = new \Webilia\WP\SettingsPanel\Boot($config['base_url'], $config['ui_url']);
+$settingsBoot->init();
+$direct = $settingsBoot->settings();
+$direct->set_config(['option_name' => 'Direct_Options', 'menu_slug' => 'DirectPage', 'customizer' => true, 'capability' => 'edit_theme_options']);
+$direct->init();
+check(Panel::get_args_by_page('DirectPage') === [], 'Direct registration does not require a Panel registry entry.');
+$_GET['page'] = 'DirectPage'; $settingsBoot->assets();
+check(isset($GLOBALS['scripts']['webilia-wp-settings-panel'], $GLOBALS['styles']['webilia-ui-v1-settings-panel']), 'Direct Settings screens load shared UI and WP adapters.');
+$GLOBALS['scripts'] = []; $GLOBALS['styles'] = []; $GLOBALS['capabilities']['edit_theme_options'] = false;
+$settingsBoot->assets();
+check(!$GLOBALS['scripts'] && !$GLOBALS['styles'], 'Direct Settings screen discovery enforces its configured capability.');
+$GLOBALS['capabilities']['edit_theme_options'] = true; $GLOBALS['doing'] = 'customize_controls_enqueue_scripts';
+$settingsBoot->assets();
+check(isset($GLOBALS['scripts']['webilia-wp-settings-panel']), 'Direct Customizer registrations load settings adapters without Panel registrations.');
+$GLOBALS['doing'] = ''; $GLOBALS['scripts'] = []; $GLOBALS['styles'] = [];
+foreach (['unrelated', 'directpage', ['DirectPage']] as $page) {
+    $_GET['page'] = $page; $settingsBoot->assets();
+    check(!$GLOBALS['scripts'] && !$GLOBALS['styles'], 'Unrelated, wrong-case and malformed pages do not load assets.');
+}
 $probe = new ReviewImport($config);
 $plugins = $probe->plugins([['key' => 'inline', 'plugins' => [['slug' => 'inline', 'name' => 'Inline', 'required' => true]]]]);
 check($plugins[0]['slug'] === 'inline' && $plugins[0]['required'] && $plugins[0]['preselected'], 'Inline demo plugin requirements are retained.');
@@ -41,16 +60,18 @@ check(array_column($legacy->demos(), 'key') === ['callback', 'filter'], 'Existin
 check(array_column($legacy->globalPlugins(), 'slug') === ['callback', 'filter'], 'Existing plugins hook and callback alias are preserved.');
 unset($GLOBALS['hooks']['wdi/demos'], $GLOBALS['hooks']['wdi/plugins']);
 
-$GLOBALS['options']['Theme_Options'] = ['TitleCase' => 'Saved', 'Accent.Color' => '#123456', 'Enabled_Flag' => 1, 'Unknown' => 'Keep'];
+$GLOBALS['options']['Theme_Options'] = ['TitleCase' => 'Saved', 'Accent.Color' => '#123456', 'Enabled_Flag' => 1, 'NoDefault' => 'Remove', 'Unknown' => 'Keep'];
 $GLOBALS['options']['theme_options'] = ['TitleCase' => 'Other owner'];
 Panel::set_args('Theme_Options', ['page_slug' => 'CasePage', 'page_parent' => 'themes.php', 'save_defaults' => true, 'customizer' => true]);
 Panel::set_section('Theme_Options', ['id' => 'general', 'title' => 'General', 'fields' => [
     ['id' => 'TitleCase', 'type' => 'text', 'default' => 'Default'],
+    ['id' => 'NoDefault', 'type' => 'text'],
     ['id' => 'Accent.Color', 'type' => 'color', 'default' => '#abcdef'],
     ['id' => 'Enabled_Flag', 'type' => 'checkbox', 'default' => 1],
     ['id' => 'BodyFont', 'type' => 'typography', 'color_origin' => 'Accent.Color', 'default' => ['color' => '']],
 ]]);
 Panel::register('Theme_Options');
+do_action('admin_init');
 $other = new ReviewSettings(); $other->set_config(['option_name' => 'theme_options']); $other->init();
 check(get_option('Theme_Options')['TitleCase'] === 'Saved' && !isset(get_option('Theme_Options')['titlecase']), 'Existing exact field keys survive defaults.');
 check(Panel::get_field_type('Theme_Options', 'TitleCase') === 'text' && Panel::get_field_meta('Theme_Options', 'Accent.Color')['default'] === '#abcdef', 'Metadata uses exact field IDs.');
@@ -62,8 +83,17 @@ check(get_option('theme_options')['TitleCase'] === 'Other owner', 'A differently
 $_POST['section'] = 'general';
 response(static function () { do_action('wp_ajax_webilia_wp_settings_reset_section'); });
 check(get_option('Theme_Options')['TitleCase'] === 'Default' && get_option('Theme_Options')['Unknown'] === 'Keep', 'Section reset targets original keys.');
+check(!array_key_exists('NoDefault', get_option('Theme_Options')), 'Section reset removes fields without defaults through the registered sanitizer.');
+$GLOBALS['options']['Theme_Options']['NoDefault'] = 'Remove again';
 response(static function () { do_action('wp_ajax_webilia_wp_settings_reset_all'); });
 check(get_option('Theme_Options')['Accent.Color'] === '#abcdef' && !isset(get_option('Theme_Options')['accentcolor']), 'Reset all retains punctuation and case.');
+check(!array_key_exists('NoDefault', get_option('Theme_Options')) && !array_key_exists('Unknown', get_option('Theme_Options')), 'Reset all persists only defaults through the registered sanitizer.');
+$_POST['data'] = http_build_query(['Theme_Options' => ['TitleCase' => 'After reset']]);
+response(static function () { do_action('wp_ajax_webilia_wp_settings_save'); });
+check(get_option('Theme_Options')['TitleCase'] === 'After reset' && get_option('Theme_Options')['Accent.Color'] === '#abcdef', 'Normal partial-save merging is restored after reset persistence.');
+$GLOBALS['options']['Theme_Options']['BodyFont'] = ['font-family' => 'Open Sans'];
+do_action('wp_enqueue_scripts');
+check(strpos($GLOBALS['styles']['wui-sp-settings-panel-google-fonts-Theme_Options']['url'] ?? '', 'family=Open+Sans') !== false, 'Font registration and enqueueing preserve the exact option and typography keys.');
 $manager = new WP_Customize_Manager(); do_action('customize_register', $manager);
 check(isset($manager->settings['Theme_Options[TitleCase]'], $manager->settings['Theme_Options[Accent.Color]']), 'Customizer IDs match original persistent keys.');
 $_POST['opt_name'] = ['Theme_Options'];
@@ -74,6 +104,23 @@ $lower->add_section('general', 'General', null, ['has_content' => true]);
 $lower->add_field('Exact.ID', 'Field', 'general', static function ($args) { echo esc_html($args['sentinel']); }, ['sentinel' => 'Callback argument']);
 ob_start(); $lower->render_page(); $rendered = ob_get_clean();
 check(strpos($rendered, 'Callback argument') !== false, 'Lower-level callbacks receive registered arguments.');
+$postField = ['id' => 'Product', 'type' => 'select', 'data' => 'posts', 'post_type' => 'product'];
+Panel::set_args('Product_Options', ['page_slug' => 'products']);
+Panel::set_section('Product_Options', ['id' => 'general', 'fields' => [$postField]]);
+Panel::register('Product_Options');
+$GLOBALS['post_queries'] = [];
+ob_start();
+foreach ($GLOBALS['hooks']['admin_menu'] as $entry) {
+    if (is_array($entry[0]) && $entry[0][0] instanceof Settings && $entry[0][0]->option_name() === 'Product_Options') {
+        // Render the registered owner rather than calling Form directly.
+        $owner = $entry[0][0];
+        $owner->render_page();
+    }
+}
+$postRendered = ob_get_clean();
+check(strpos($postRendered, 'product record') !== false && end($GLOBALS['post_queries'])['post_type'] === 'product', 'Settings-page fields forward configured query post types.');
+$customRendered = Panel::render_customizer_field($postField + ['customizer_link_attr' => 'data-customize-setting-link="Product_Options[Product]"'], 'Product_Options');
+check(strpos($customRendered, 'product record') !== false && end($GLOBALS['post_queries'])['post_type'] === 'product', 'Customizer fields forward configured query post types.');
 $literal = 'C:\\site\\path / \\d+ / {"escaped":"\\\\value"}';
 $editor = Form::editor(['name' => 'theme[editor]', 'id' => 'editor', 'value' => $literal]);
 check(strpos($editor, esc_html($literal)) !== false, 'Editor values retain literal backslashes.');
@@ -93,6 +140,11 @@ check($importUrl->url() === 'https://site.test/wp-admin/themes.php?page=ImportCa
 add_filter('wdi/page_setup', static function ($setup) { $setup['parent_slug'] = 'tools.php'; $setup['menu_slug'] = 'filtered'; return $setup; });
 $importUrl->add_admin_page();
 check($importUrl->url() === 'https://site.test/wp-admin/tools.php?page=filtered', 'Filtered registration controls the return URL.');
+$_GET['page'] = 'filtered'; $GLOBALS['scripts'] = []; $GLOBALS['styles'] = [];
+$importUrl->assets();
+check(isset($GLOBALS['scripts']['webilia-wp-demo-import'], $GLOBALS['styles']['webilia-ui-v1-demo-import']), 'Filtered importer registration controls asset loading.');
+$_GET['page'] = 'ImportCase'; $GLOBALS['scripts'] = []; $GLOBALS['styles'] = []; $importUrl->assets();
+check(!$GLOBALS['scripts'] && !$GLOBALS['styles'], 'Original importer slug no longer loads assets after filtering.');
 $unregistered = new ReviewImport($config);
 check($unregistered->url() === 'https://site.test/wp-admin/tools.php?page=filtered', 'Native redirects resolve page filters even before admin_menu registration.');
 unset($GLOBALS['hooks']['wdi/page_setup']);
@@ -103,6 +155,27 @@ unset($GLOBALS['menu_urls']);
 $temporary = [];
 function reviewFile($contents) { global $temporary; $path = tempnam(sys_get_temp_dir(), 'webilia-review-'); file_put_contents($path, $contents); $temporary[] = $path; return $path; }
 register_shutdown_function(static function () use (&$temporary) { foreach ($temporary as $path) if (is_file($path)) unlink($path); });
+$localContent = __DIR__ . '/fixtures/theme-tools/content.xml';
+foreach (['local_import_file', 'local_import_widget_file', 'local_import_customizer_file'] as $missingKey) {
+    $missingDemo = ['key' => 'missing-local', 'local_import_file' => $localContent];
+    $missingDemo[$missingKey] = '/missing/configured-import-file';
+    $missing = new ReviewImport($config + ['callbacks' => ['demos' => static function () use ($missingDemo) { return [$missingDemo]; }]]);
+    $_POST = ['security' => 'webilia-wp-demo-ajax-verification', 'selected' => 0];
+    check(response([$missing, 'ajax_import_demo_data'])->status === 500, 'An explicitly configured missing local file cannot report success.');
+    check($missing->contentCalls === 0 && $missing->widgetCalls === 0, 'Missing configured local files are rejected before any import stage.');
+    $missing->clearState();
+}
+check(is_file($localContent), 'Failed preparation never deletes a local source.');
+$missingDemo = ['key' => 'cleanup', 'import_file_url' => 'https://files.test/content.xml', 'local_import_widget_file' => '/missing/widgets.json'];
+$GLOBALS['downloads']['https://files.test/content.xml'] = '<rss/>';
+$missing = new ReviewImport($config + ['callbacks' => ['demos' => static function () use ($missingDemo) { return [$missingDemo]; }]]);
+check(response([$missing, 'ajax_import_demo_data'])->status === 500, 'A missing local file also fails after remote preparation.');
+foreach ($GLOBALS['downloaded'] as $path) check(!is_file($path), 'Preparation failure cleans earlier owned downloads.');
+$missing->clearState();
+$omittedDemo = ['key' => 'omitted', 'local_import_file' => $localContent];
+$omitted = new ReviewImport($config + ['callbacks' => ['demos' => static function () use ($omittedDemo) { return [$omittedDemo]; }]]);
+check(response([$omitted, 'ajax_import_demo_data'])->data['status'] === 'afterAllImportAJAX', 'Omitted optional local files remain supported.');
+$omitted->clearState();
 foreach (['', '{bad', '<html>Error</html>', 'null', '"scalar"'] as $contents) {
     $file = reviewFile($contents); $GLOBALS['options']['invalid_settings'] = ['keep' => true];
     check(is_wp_error($probe->settingsFiles([['option_name' => 'invalid_settings', 'file_path' => $file]])), 'Invalid settings file must fail.');

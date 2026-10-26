@@ -53,12 +53,15 @@ structure, conditionals, reset behavior, JSON import/export, typography, media/g
 color controls, repeater/slides/social fields, sortable controls, and query-backed options remain
 supported. Defaults initialize a missing option; they do not overwrite existing settings.
 Saved options retain the same array structure and Customizer setting IDs use `option_name[field]`.
+Section resets remove fields without defaults while preserving unrelated values; full resets replace
+the option with defaults. WordPress's registered sanitizer retains these replacement semantics.
+Query-backed `data => 'posts'` fields accept `post_type` in both admin and Customizer controls.
 
 Panels are keyed by their option name. Register each option once; repeated registration is inert.
 One dispatcher routes save/reset requests to that registered owner and checks its capability and
 nonce. Each option must have a single active owner during staged adoption. `Boot::settings()` and
-`Settings` retain the lower-level registration API; `Panel` is the integration entry point that
-also registers field metadata, defaults, fonts, and asset-screen discovery.
+`Settings` retain the lower-level registration API, including asset discovery for their initialized
+admin and Customizer screens. `Panel` also registers field metadata, defaults, and fonts.
 
 Public hooks retain their names and argument order, including `webilia_settings_panel_updated`,
 `webilia_settings_panel/page_header_html`, `webilia_include_html_file`, and the
@@ -113,7 +116,9 @@ sidebar assignments; unknown sidebars use inactive widgets. Customizer files rem
 arrays of `template`, `mods`, and optional `options`, with object deserialization disabled and an
 active-theme match required. Plugin installation/activation retains its extra WordPress
 capability checks. Downloaded files are removed after completion/failure; configured local
-source files are not deleted. The full WXR document is validated before import mutations, and
+source files are not deleted. Nonempty configured local paths must be readable files; missing
+files fail preparation rather than silently skipping a stage. Omitted optional files remain supported.
+The full WXR document is validated before import mutations, and
 configured settings JSON must be readable and valid; validation errors stop the flow.
 
 The main AJAX stage checkpoints completed content, widget and settings steps. Repeating a

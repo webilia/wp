@@ -101,17 +101,17 @@ class Boot extends Base
      */
     private function enqueue_assets(): bool
     {
-        if (is_customize_preview() || doing_action('customize_controls_enqueue_scripts')) return Panel::has_customizer();
+        if (is_customize_preview() || doing_action('customize_controls_enqueue_scripts')) return Settings::has_customizer();
 
         if (!is_admin()) return false;
 
-        if (isset($GLOBALS['pagenow']) && $GLOBALS['pagenow'] === 'customize.php') return Panel::has_customizer();
+        if (isset($GLOBALS['pagenow']) && $GLOBALS['pagenow'] === 'customize.php') return Settings::has_customizer();
 
-        $page = isset($_GET['page']) ? sanitize_key($_GET['page']) : '';
+        $page = isset($_GET['page']) && is_string($_GET['page']) ? wp_unslash($_GET['page']) : '';
         if ($page === '') return false;
 
-        $args = Panel::get_args_by_page($page);
-        return $args && current_user_can($args['page_permissions'] ?? 'manage_options');
+        $config = Settings::get_config_by_page($page);
+        return $config && current_user_can($config['capability']);
     }
 
     /**
@@ -121,10 +121,10 @@ class Boot extends Base
     {
         if (!is_admin() || !isset($_GET['page'])) return;
 
-        $page = sanitize_key(wp_unslash($_GET['page']));
+        $page = is_string($_GET['page']) ? wp_unslash($_GET['page']) : '';
         if ($page === '') return;
 
-        $args = Panel::get_args_by_page($page);
+        $args = Settings::get_config_by_page($page);
         if (!$args) return;
 
         $custom_style = isset($args['custom_style']) && is_array($args['custom_style']) ? $args['custom_style'] : [];

@@ -144,6 +144,7 @@ class Panel
             'disable_google_fonts_link' => $args['disable_google_fonts_link'] ?? false,
             'base_url' => $args['base_url'] ?? '',
             'base_path' => $args['base_path'] ?? '',
+            'custom_style' => $args['custom_style'] ?? [],
         ]);
 
         $structured_sections = self::normalize_sections($sections);
@@ -632,7 +633,6 @@ class Panel
      */
     protected static function register_fonts_enqueue(string $opt_name, array $args): void
     {
-        $opt_name = sanitize_key($opt_name);
         if ($opt_name === '') return;
         if (isset(self::$fonts_enqueued[$opt_name])) return;
 
@@ -912,6 +912,7 @@ class Panel
             'class' => $field['class'] ?? '',
             'options' => $field['options'] ?? [],
             'data' => $field['data'] ?? null,
+            'post_type' => $field['post_type'] ?? 'post',
             'tabs' => $field['tabs'] ?? null,
             'tab_group' => $field['tab_group'] ?? null,
             'placeholder' => $field['placeholder'] ?? '',

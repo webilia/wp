@@ -7,6 +7,8 @@ class Settings extends Base
     private static $instances = [];
     /** @var boolean */
     private static $actions_registered = false;
+    /** @var boolean */
+    private $persisting_reset = false;
 
     /** @var array<string, mixed> */
     protected $config = [
@@ -90,6 +92,33 @@ class Settings extends Base
             $priority = is_numeric($this->config['admin_bar_priority']) ? (int) $this->config['admin_bar_priority'] : 100;
             add_action('admin_bar_menu', [$this, 'register_admin_bar'], $priority);
         }
+    }
+
+    /**
+     * @param string $page
+     * @return array<mixed>
+     */
+    public static function get_config_by_page(string $page): array
+    {
+        foreach (self::$instances as $settings)
+        {
+            if ($settings->config['menu_slug'] === $page) return $settings->config;
+        }
+
+        return [];
+    }
+
+    /**
+     * @return bool
+     */
+    public static function has_customizer(): bool
+    {
+        foreach (self::$instances as $settings)
+        {
+            if (!empty($settings->config['customizer']) && current_user_can($settings->config['capability'])) return true;
+        }
+
+        return false;
     }
 
     /**
@@ -496,6 +525,9 @@ class Settings extends Base
      */
     public function sanitize($value)
     {
+        // Reset values are complete replacements, not partial form submissions.
+        if ($this->persisting_reset) return $value;
+
         $existing = $this->get_option();
         $existing = is_array($existing) ? $existing : [];
         $value = is_array($value) ? $value : [];
@@ -671,7 +703,7 @@ class Settings extends Base
             $updated = self::apply_color_origin($updated, $field_id, $meta, $updated[$origin]);
         }
 
-        update_option($opt_name, $updated);
+        $this->persist_reset($opt_name, $updated);
         wp_send_json_success(['message' => esc_html__('Section reset.', 'webilia-settings-panel')]);
     }
 
@@ -705,9 +737,27 @@ class Settings extends Base
             $defaults = self::apply_color_origin($defaults, $field_id, $meta, $origin_value);
         }
 
-        update_option($opt_name, $defaults);
+        $this->persist_reset($opt_name, $defaults);
 
         wp_send_json_success(['message' => esc_html__('All settings reset.', 'webilia-settings-panel')]);
+    }
+
+    /**
+     * @param string $opt_name
+     * @param array<mixed> $value
+     * @return void
+     */
+    private function persist_reset(string $opt_name, array $value): void
+    {
+        $this->persisting_reset = true;
+        try
+        {
+            update_option($opt_name, $value);
+        }
+        finally
+        {
+            $this->persisting_reset = false;
+        }
     }
 
     /**
