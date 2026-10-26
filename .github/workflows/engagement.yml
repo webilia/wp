@@ -1,8 +1,19 @@
-name: Engagement services
+name: Shared WordPress services
 on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: test-password
+          MYSQL_DATABASE: webilia_lock_tests
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -ptest-password"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     strategy:
       matrix:
         php: ['7.4', '8.4']
@@ -11,11 +22,25 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: xml, xmlreader, mysqli
+          tools: composer
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - run: php tests/engagement.php
-      - run: php tests/legacy-order.php
+      - name: Install companion UI source for contract tests
+        env:
+          UI_REF: 6a11ab714f9b1fb34fb02683a04ef5e63aad9476
+        run: |
+          mkdir -p vendor/webilia/ui
+          curl --fail --silent --show-error --location "https://api.github.com/repos/webilia/webilia-ui/tarball/${UI_REF}" | tar -xz --strip-components=1 -C vendor/webilia/ui
+      - run: composer validate --strict
+      - run: composer run test
+        env:
+          WEBILIA_UI_PATH: ${{ github.workspace }}/vendor/webilia/ui
+          WEBILIA_TEST_MYSQL_HOST: 127.0.0.1
+          WEBILIA_TEST_MYSQL_PASSWORD: test-password
       - run: npm ci
       - run: npm test
+        env:
+          WEBILIA_UI_PATH: ${{ github.workspace }}/vendor/webilia/ui

@@ -5,6 +5,7 @@
     "test": "node --test tests/js/*.test.mjs"
   },
   "devDependencies": {
+    "jquery": "^3.7.1",
     "jsdom": "^26.1.0"
   }
 }
