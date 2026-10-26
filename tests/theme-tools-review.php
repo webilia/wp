@@ -11,6 +11,7 @@ class ReviewSettings extends Settings {
 class ReviewImport extends \Webilia\WP\DemoImport\Boot {
     public $contentCalls = 0;
     public $widgetCalls = 0;
+    public $customizerCalls = 0;
     public function demos() { return $this->demo(); }
     public function plugins($demos) { return $this->plugins_for_demo_index(0, $demos); }
     public function globalPlugins() { return $this->plugin(); }
@@ -20,6 +21,7 @@ class ReviewImport extends \Webilia\WP\DemoImport\Boot {
     public function url() { return $this->current_page_url(); }
     protected function import_content_file(string $path) { $this->contentCalls++; return null; }
     protected function import_widgets_file(string $path) { $this->widgetCalls++; return parent::import_widgets_file($path); }
+    protected function import_customizer_file(string $path) { $this->customizerCalls++; return parent::import_customizer_file($path); }
 }
 $config = ['base_url' => 'https://site.test/wp', 'ui_url' => 'https://site.test/ui'];
 $settingsBoot = new \Webilia\WP\SettingsPanel\Boot($config['base_url'], $config['ui_url']);
@@ -226,15 +228,38 @@ $interrupted->clearState();
 
 $customDemo = $demo + ['import_customizer_file_url' => 'https://files.test/customizer.dat'];
 $GLOBALS['downloads']['https://files.test/customizer.dat'] = 'invalid';
-$customRetry = new ReviewImport($config + ['callbacks' => ['demos' => static function () use ($customDemo) { return [$customDemo]; }]]);
+$customEvents = [];
+$customRetry = new ReviewImport($config + ['callbacks' => [
+    'demos' => static function () use ($customDemo) { return [$customDemo]; },
+    'after_import' => static function () use (&$customEvents) { $customEvents[] = 'after'; },
+]]);
 check(response([$customRetry, 'ajax_import_demo_data'])->data['status'] === 'customizerAJAX', 'Main response retains the Customizer transition.');
+check(response([$customRetry, 'ajax_after_import_data'])->status === 409 && $customEvents === [], 'Finalization cannot skip a pending Customizer stage.');
 check(response([$customRetry, 'ajax_import_customizer_data'])->status === 500, 'Invalid Customizer reports an error.');
+$retryState = $customRetry->state(); $downloadCount = count($GLOBALS['downloaded']);
+$customMods = $GLOBALS['mods'] ?? [];
+check(response([$customRetry, 'ajax_import_customizer_data'])->status === 409, 'A direct retry cannot treat cleaned preparation state as an omitted file.');
+check(response([$customRetry, 'ajax_after_import_data'])->status === 409 && $customEvents === [], 'Failed Customizer imports cannot report successful finalization.');
+check($customRetry->state() === $retryState && count($GLOBALS['downloaded']) === $downloadCount && ($GLOBALS['mods'] ?? []) === $customMods, 'Rejected retries preserve main-stage checkpoints without downloading or applying data.');
 $GLOBALS['downloads']['https://files.test/customizer.dat'] = file_get_contents(__DIR__ . '/fixtures/theme-tools/customizer.dat');
 check(response([$customRetry, 'ajax_import_demo_data'])->data['status'] === 'customizerAJAX', 'Customizer retries prepare fresh owned files.');
 check($customRetry->contentCalls === 1 && $customRetry->widgetCalls === 1, 'Later Customizer failures cannot cause main-stage duplication.');
 check(response([$customRetry, 'ajax_import_customizer_data'])->data['status'] === 'afterAllImportAJAX', 'Corrected Customizer data can finish recovery.');
+check($GLOBALS['mods']['accent'] === '#123456' && get_option('blogname') === 'Imported site', 'Successful recovery applies Customizer mods and options before advancing.');
+check(response([$customRetry, 'ajax_import_customizer_data'])->data['status'] === 'afterAllImportAJAX' && $customRetry->customizerCalls === 2, 'Lost successful Customizer responses replay without importing twice.');
+check(response([$customRetry, 'ajax_import_demo_data'])->data['status'] === 'afterAllImportAJAX', 'Main response reflects completed Customizer progress.');
 response([$customRetry, 'ajax_after_import_data']);
+check($customEvents === ['after'], 'Recovery invokes finalization only after Customizer success.');
 foreach ($GLOBALS['downloaded'] as $path) check(!file_exists($path), 'Customizer recovery cleans every owned download.');
+
+$expired = new ReviewImport($config + ['callbacks' => ['demos' => static function () use ($customDemo) { return [$customDemo]; }]]);
+response([$expired, 'ajax_import_demo_data']);
+$staged = $expired->state()['files']['customizer'];
+check(is_file($staged), 'Expiry fixture prepares a Customizer download.');
+$savedTransients = $GLOBALS['transients']; $GLOBALS['transients'] = [];
+check(response([$expired, 'ajax_import_customizer_data'])->status === 409 && $expired->customizerCalls === 0, 'Expired transient state cannot advance the Customizer stage.');
+check(response([$expired, 'ajax_after_import_data'])->status === 409, 'Expired transient state cannot report import completion.');
+$GLOBALS['transients'] = $savedTransients; $expired->clearState();
 
 
 class ValidationWXR extends \Webilia\WP\DemoImport\Importer\WXRImporter {

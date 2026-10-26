@@ -473,19 +473,29 @@ class Boot extends Base
         $this->verify_ajax_call();
 
         $data = $this->get_import_data();
-        $customizer_file = isset($data['files']['customizer']) ? (string) $data['files']['customizer'] : '';
-        if ($customizer_file !== '')
+        if (($data['main_response']['status'] ?? '') === 'afterAllImportAJAX')
         {
-            $result = $this->import_customizer_file($customizer_file);
-            if (is_wp_error($result))
-            {
-                $this->cleanup_import_files($data['files'] ?? []);
-                unset($data['files'], $data['main_response']);
-                $this->set_import_data($data);
-                wp_send_json(['error' => $result->get_error_message()], 500);
-            }
+            wp_send_json(['status' => 'afterAllImportAJAX']);
         }
 
+        $customizer_file = isset($data['files']['customizer']) ? (string) $data['files']['customizer'] : '';
+        if (($data['main_response']['status'] ?? '') !== 'customizerAJAX' || $customizer_file === '')
+        {
+            wp_send_json(['error' => __('Import preparation is missing or expired. Resume the main import step before continuing.',
+                $this->text_domain())], 409);
+        }
+
+        $result = $this->import_customizer_file($customizer_file);
+        if (is_wp_error($result))
+        {
+            $this->cleanup_import_files($data['files'] ?? []);
+            unset($data['files'], $data['main_response']);
+            $this->set_import_data($data);
+            wp_send_json(['error' => $result->get_error_message()], 500);
+        }
+
+        $data['main_response'] = ['status' => 'afterAllImportAJAX'];
+        $this->set_import_data($data);
         wp_send_json(['status' => 'afterAllImportAJAX']);
     }
 
@@ -501,8 +511,12 @@ class Boot extends Base
 
         $data = $this->get_import_data();
         $selected = isset($data['selected']) && is_array($data['selected']) ? $data['selected'] : [];
+        if (!$selected || ($data['main_response']['status'] ?? '') !== 'afterAllImportAJAX')
+        {
+            wp_send_json(['error' => __('Import is not ready to finish. Resume the import before continuing.', $this->text_domain())], 409);
+        }
 
-        if ($selected) $this->after_import($selected);
+        $this->after_import($selected);
         $this->clear_import_data();
 
         $title = esc_html__('Import Complete!', $this->text_domain());

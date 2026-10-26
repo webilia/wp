@@ -123,7 +123,11 @@ configured settings JSON must be readable and valid; validation errors stop the 
 
 The main AJAX stage checkpoints completed content, widget and settings steps. Repeating a
 completed request returns its saved progress response; recovery after a declared failure skips
-completed steps. An atomic per-user request guard rejects overlapping requests. An interrupted
+completed steps. An atomic per-user request guard rejects overlapping requests. A
+Customizer request whose preparation was cleaned up or expired returns an error instead of
+skipping its data. After a declared Customizer failure, resume the main AJAX step to prepare fresh
+files while retaining completed main-stage checkpoints. Successful Customizer responses are saved
+for replay, and finalization requires all configured stages to have completed. An interrupted
 stage with an uncertain result stops instead of repeating side effects: inspect/recover the
 partial site before clearing its saved import state and starting again. Normal finalization
 clears checkpoints and temporary files. The bundled WXR code is GPL-2.0-or-later; see its LICENSE/NOTICE.
