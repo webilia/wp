@@ -1,6 +1,9 @@
 parameters:
     scanFiles:
         - tests/phpstan-ui.php
+    excludePaths:
+        analyse:
+            - src/DemoImport/Importer/*
     level: 6
     paths:
         - src

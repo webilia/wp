@@ -1,0 +1,7 @@
+.wui-sp-customizer-child-hidden {
+    position: absolute !important;
+    left: -99999px !important;
+    top: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}

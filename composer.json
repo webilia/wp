@@ -2,7 +2,10 @@
     "name": "webilia/wp",
     "description": "A handy set of libraries for WordPress developments.",
     "type": "library",
-    "license": "MIT",
+    "license": [
+        "MIT",
+        "GPL-2.0-or-later"
+    ],
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
@@ -39,7 +42,7 @@
         "phpcbf": [
             "vendor/bin/phpcbf"
         ],
-        "test": "php tests/engagement.php && php tests/legacy-order.php"
+        "test": "php tests/engagement.php && php tests/legacy-order.php && php tests/theme-tools.php && php tests/theme-tools-loading.php legacy-first && php tests/theme-tools-loading.php new-first && php tests/theme-tools-loading.php missing-ui && php tests/theme-tools-loading.php old-ui"
     },
     "config": {
         "platform": {
@@ -47,6 +50,6 @@
         }
     },
     "suggest": {
-        "webilia/ui": "^1.4 for opt-in announcement and deactivation UI"
+        "webilia/ui": "^1.5 for opt-in Demo Importer, Settings Panel, announcements and deactivation UI"
     }
 }

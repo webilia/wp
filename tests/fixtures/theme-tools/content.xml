@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/">
+<channel>
+<title>Fixture site</title>
+<wp:wxr_version>1.2</wp:wxr_version>
+<wp:base_site_url>https://fixture.test</wp:base_site_url>
+<wp:base_blog_url>https://fixture.test</wp:base_blog_url>
+</channel>
+</rss>

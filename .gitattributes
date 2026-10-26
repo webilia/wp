@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# Preserve the bundled upstream importer and its license without whitespace rewrites.
+src/DemoImport/Importer/** -whitespace

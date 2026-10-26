@@ -117,3 +117,9 @@ Remote IDs use `remote:` plus the announcement ID for the published service; cus
 The new Feedback base registers one `web_dfd` dispatcher and retains legacy constructor arguments and `reasons()`, `dialog()`, and `save()` overrides. It also supports explicit `ui: true`. Prefer `UIFeedback`, an adapter extending that same base, for products using the new UI: its isolated `webilia_feedback` action works alongside plugins bundling the older base class. Exact basenames select handlers, with capability and target-specific nonce checks. Skip/Cancel make no request; bulk deactivation is left native. A failed submission never forces deactivation.
 
 Run `composer run test`, `npm ci`, and `npm test`. Package release order: merge/tag UI 1.4, then WP 1.1, then update consumer locks to those stable releases. Never tag an unmerged branch. Keep legacy products on their presentation until their separate migrations.
+
+## Theme tools (1.2)
+
+Demo Importer and Settings Panel are opt-in and require `webilia/ui:^1.5`. See
+[installation, integration, compatibility and release notes](docs/theme-tools.md).
+The release version is `v1.2.0`; publish after UI `v1.5.0` and review/merge.
