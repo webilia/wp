@@ -631,7 +631,8 @@ class Settings extends Base
     if (!form) return;
 
     // Keep the original controls so any listeners survive a section change.
-    const controls = Array.from(form.querySelectorAll('.wui-sp-action-buttons, .wui-sp-action-reset-section-icon'), control => ({
+    const selectors = '.wui-sp-panel-actions-top .wui-sp-action-buttons, .wui-sp-action-reset-section-icon, .wui-sp-panel-actions-bottom';
+    const controls = Array.from(form.querySelectorAll(selectors), control => ({
         control,
         anchor: document.createComment(''),
     }));

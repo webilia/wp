@@ -57,9 +57,10 @@ Section resets remove fields without defaults while preserving unrelated values;
 the option with defaults. WordPress's registered sanitizer retains these replacement semantics.
 Query-backed `data => 'posts'` fields accept `post_type` in both admin and Customizer controls.
 
-Set `'show_actions' => false` in a section to remove the Save Settings, Reset All, and Reset Section
-controls while that section is open in the admin panel. Use it for sections with their own actions.
-The controls return when the user opens another section. It defaults to `true`.
+Set `'show_actions' => false` in a section to remove the header's Save Settings, Reset All, and
+Reset Section controls and the entire footer action bar while that section is open in the admin
+panel. Use it for sections with their own actions. The controls return when the user opens another
+section. It defaults to `true`.
 
 Panels are keyed by their option name. Register each option once; repeated registration is inert.
 One dispatcher routes save/reset requests to that registered owner and checks its capability and
