@@ -140,6 +140,7 @@ class Settings extends Base
             'subsection' => !empty($args['subsection']),
             'icon' => isset($args['icon']) ? (string) $args['icon'] : '',
             'has_content' => !empty($args['has_content']),
+            'show_actions' => (bool) ($args['show_actions'] ?? true),
         ];
 
         return $this;
@@ -282,6 +283,7 @@ class Settings extends Base
     public function render_page()
     {
         if (!current_user_can($this->config['capability'])) return;
+        $this->register_section_actions();
         $sections = $this->sections;
         foreach ($sections as $id => &$section)
         {
@@ -608,6 +610,49 @@ class Settings extends Base
             'bottom' => $is_bottom, 'is_bottom' => $is_bottom,
             'labels' => \Webilia\WP\ThemeTools::labels(\Webilia\UI\SettingsPanel\Layout::LABELS, 'webilia-settings-panel'),
         ], 'return_output' => true]);
+    }
+
+    private function register_section_actions(): void
+    {
+        $sections_without_actions = [];
+        foreach ($this->sections as $id => $section)
+        {
+            if (!$section['show_actions']) $sections_without_actions[] = $id;
+        }
+
+        if (!$sections_without_actions) return;
+
+        $option = wp_json_encode($this->config['option_name'], JSON_HEX_TAG);
+        $sections = wp_json_encode($sections_without_actions, JSON_HEX_TAG);
+        $script = <<<JS
+(function (option, sectionsWithoutActions) {
+    const forms = Array.from(document.querySelectorAll('.wui-sp-panel-form'));
+    const form = forms.find(element => element.getAttribute('data-wui-sp-opt-name') === option);
+    if (!form) return;
+
+    // Keep the original controls so any listeners survive a section change.
+    const selectors = '.wui-sp-panel-actions-top .wui-sp-action-buttons, .wui-sp-action-reset-section-icon, .wui-sp-panel-actions-bottom';
+    const controls = Array.from(form.querySelectorAll(selectors), control => ({
+        control,
+        anchor: document.createComment(''),
+    }));
+
+    function updateActions() {
+        const section = form.querySelector('.wui-sp-panel-section.is-active');
+        if (!section) return;
+
+        const hide = sectionsWithoutActions.includes(section.getAttribute('data-section'));
+        controls.forEach(({control, anchor}) => {
+            if (hide) control.replaceWith(anchor);
+            else anchor.replaceWith(control);
+        });
+    }
+
+    document.addEventListener('wui-sp:section-change', updateActions);
+    updateActions();
+})($option, $sections);
+JS;
+        wp_add_inline_script('webilia-wp-settings-panel', $script);
     }
 
     /** Read an exact registered option key; registry lookup provides validation.
