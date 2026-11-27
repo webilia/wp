@@ -164,6 +164,7 @@ class Panel
                 'subsection' => !empty($section['subsection']),
                 'icon' => $section['icon'] ?? '',
                 'has_content' => $has_content,
+                'show_actions' => $section['show_actions'] ?? true,
             ]);
 
             foreach ($fields as $field)
